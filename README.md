@@ -6,10 +6,10 @@
 ## Never Miss a Low Battery Warning Again
 **DualSense Battery Monitor** is a lightweight Windows utility that automatically alerts you with a **visual overlay** whenever any connected **PlayStation 5 DualSense controller** reaches a low battery level.
 
-* ✅ Auto-starts with Windows
-* 🔋 Accurate battery monitoring every 5 seconds
-* ⚠️ Only shows when battery is low
-* 🧠 Silent
+* Auto-starts with Windows
+* Battery monitoring every 5 seconds
+* Only shows when battery is low
+* Silent
 
 > [!NOTE]
 > This only works on Windows systems
@@ -23,21 +23,21 @@ This utility is perfect for:
 The app acts **only when needed**, showing a overlay with controller status **only when a low battery is detected**.
 
 ## Features
-* 🎮 **DualSense-aware overlay:** Shows connected PS5 controllers and their individual battery levels.
-* ⚠️ **Low battery detection:** If any controller drops below 25%, the widget appears and below 15% the effected controller's battery icon will start flashing.
-* 🔁 **5-second refresh rate:** Battery status updates frequently and efficiently.
-* 🪛 **Automatic Windows startup:** Uses registry-based startup (no Task Scheduler required).
-* 🧊 **Invisible when not needed:** If no controller is low on battery, the widget remains hidden.
-* 🧪 **Tested with firmware A-0520** (latest as of June 11, 2025).
-* 📦 **Framework-dependent and self-contained releases available.**
-* 💡 **Built using .NET 8.0.**
+* **DualSense-aware overlay:** Shows connected PS5 controllers and their individual battery levels.
+* **Low battery detection:** If any controller drops below 25%, the widget appears and below 15% the effected controller's battery icon will start flashing.
+* **5-second refresh rate:** Battery status updates frequently and efficiently.
+* **Automatic Windows startup:** Uses registry-based startup (no Task Scheduler required).
+* **Invisible when not needed:** If no controller is low on battery, the widget remains hidden.
+* **Tested with firmware A-0520** (latest as of June 11, 2025).
+* **Framework-dependent and self-contained releases available.**
+* **Built using .NET 8.0.**
 
 ## Installation & Download
 You can download the latest release [here](https://github.com/PixelIndieDev/DualSenseBatteryMonitor/releases).
 
 Two versions are provided:
-* 📁 **Framework-dependent** (.NET 8.0 required on system)
-* 📦 **Self-contained** (no dependencies — just run the executable with its files)
+* **Framework-dependent** (.NET 8.0 required on system)
+* **Self-contained** (no dependencies — just run the executable with its files)
 
 No manual configuration is needed. On first launch:
 * The app silently registers itself to **auto-start** with Windows.

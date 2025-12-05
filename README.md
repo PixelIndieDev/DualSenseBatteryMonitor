@@ -28,7 +28,7 @@ The app acts **only when needed**, showing a overlay with controller status **on
 * **5-second refresh rate:** Battery status updates frequently and efficiently.
 * **Automatic Windows startup:** Uses registry-based startup (no Task Scheduler required).
 * **Invisible when not needed:** If no controller is low on battery, the widget remains hidden.
-* **Tested with firmware A-0520** (latest as of June 11, 2025).
+* **Tested with firmware A-0630** (latest as of December 5, 2025).
 * **Framework-dependent and self-contained releases available.**
 * **Built using .NET 8.0.**
 
@@ -39,27 +39,21 @@ Two versions are provided:
 * **Framework-dependent** (.NET 8.0 required on system)
 * **Self-contained** (no dependencies — just run the executable with its files)
 
-No manual configuration is needed. On first launch:
-* The app silently registers itself to **auto-start** with Windows.
-* If **no controller is connected or has low battery**, the app hides itself automatically.
+### Make it start up on Windows startup
+1. Launch the application
+2. Right click the icon of the application in your system bar
+3. Click on start on startup
+   * If the option is checked, then it will start up on Windows startup
 
 ## Uninstallation
 To completely remove **DualSense Battery Monitor** from your system:
 
-1. **Stop the application from currently running:**
-
-    Find the DualSenseBatteryMonitor.exe process in Task Manager and 'End Task' it.
-2. **Delete the application files:**
-
-    Remove the folder/insides of folder where you extracted the application.
-
-> [!WARNING]
-> **(Optional) (Advanced users only)**
-> **Remove the auto-start registry entry:**
->
-> 1. Open regedit and navigate to 'HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run'
-> 
-> 2. Find the entry related to DualSenseBatteryMonitor and delete it to stop the app from launching automatically at startup.
+**Make sure the application is running**
+1. Right click the icon of the application in your system bar
+2. Click on start on startup
+   * If the option is checked, then it will start up on Windows startup. When uninstalling, you want this unchecked
+3. Click on exit
+2. **Delete the application files:** Remove the folder/insides of folder where you extracted the application.
 
 ## Inspiration
 This application is inspired by:

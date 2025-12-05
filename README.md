@@ -55,6 +55,10 @@ To completely remove **DualSense Battery Monitor** from your system:
 3. Click on exit
 2. **Delete the application files:** Remove the folder/insides of folder where you extracted the application.
 
+## Common issues
+### Holding the PS button (Home button) for ~1-1.5 sec keeps opening Steam Big Picture Mode/Steam overlay
+Go to Steam->Settings->Controller and disable "Guide button focuses Steam" and "Enable guide button chords for controller", then restart Steam (Fully exit Steam by going to Steam->Exit, and then start Steam again)
+
 ## Inspiration
 This application is inspired by:
 * [nondebug/dualsense](https://github.com/nondebug/dualsense) – DualSense explorer tool

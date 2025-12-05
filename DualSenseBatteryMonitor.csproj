@@ -6,13 +6,17 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+	<UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>icons\window\BatteryMonitor.ico</ApplicationIcon>
     <SignAssembly>False</SignAssembly>
     <EnableNETAnalyzers>False</EnableNETAnalyzers>
     <PlatformTarget>x86</PlatformTarget>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <ErrorReport>none</ErrorReport>
-	<Optimize>true</Optimize>
+	<Optimize>True</Optimize>
+	<Authors>PixelIndieDev</Authors>
+    <VersionPrefix>3.0.0</VersionPrefix>
+	<ProduceReferenceAssembly>False</ProduceReferenceAssembly>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

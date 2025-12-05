@@ -3,6 +3,10 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using Brush = System.Windows.Media.Brush;
+using Color = System.Windows.Media.Color;
+using ColorConverter = System.Windows.Media.ColorConverter;
+using Point = System.Windows.Point;
 
 namespace DualSenseBatteryMonitor
 {
@@ -29,11 +33,8 @@ namespace DualSenseBatteryMonitor
         private LinearGradientBrush color_player_04 = new LinearGradientBrush();
         private List<Brush> playerColors;
 
-        //Controls animation for low battery status
         private bool isPlayingLowBatAnim = false;
-        //Low battery anim threshold
         private const int lowBatteryThreshold = 15;
-        //cached storyboard reference
         private Storyboard blink_storyboard;
 
         // Constructor
@@ -44,7 +45,6 @@ namespace DualSenseBatteryMonitor
             InitializePlayerColors();
             InitializeComponent();
 
-            //Load animation from XAML resources
             blink_storyboard = (Storyboard)Resources["BlinkStoryboard"];
 
             //Apply player-specific color to index text
@@ -64,9 +64,7 @@ namespace DualSenseBatteryMonitor
                 {
                     //Hide widget for unused player slots
                     Visibility = Visibility.Collapsed;
-                    //If widget is hidden, no need to update the icons
-
-                    UpdateBatteryAnim(0, true); //Stop blinking to improve performance
+                    UpdateBatteryAnim(0, true);
                 } else
                 {
                     //No controllers, show "disconnected" icon
@@ -74,10 +72,8 @@ namespace DualSenseBatteryMonitor
                     Visibility = Visibility.Visible;
 
                     //Set controller icon using cached icon
-                    if (image_controller_icon.Source != ControllerDisconnectedIcon)
-                        image_controller_icon.Source = ControllerDisconnectedIcon;
+                    if (image_controller_icon.Source != ControllerDisconnectedIcon) image_controller_icon.Source = ControllerDisconnectedIcon;
 
-                    //Make icon darker when no controller is connected
                     image_controller_icon.Opacity = disabled_opacity;
 
                     progressbar_battery.Value = 0;
@@ -85,7 +81,6 @@ namespace DualSenseBatteryMonitor
 
                     SetChargingIconActive(isCharging);
 
-                    //Use true instead of isCharging, so it won't play the animation when nothing is rendering
                     UpdateBatteryAnim(batterylevel, true);
                 }
             }
@@ -94,12 +89,9 @@ namespace DualSenseBatteryMonitor
                 //If this controller is connected
                 if (controllerAmount >= self_index)
                 {
-                    //Show controller as connected
                     Visibility = Visibility.Visible;
 
-                    //Set controller icon using cached icon
-                    if (image_controller_icon.Source != ControllerConnectedIcon)
-                        image_controller_icon.Source = ControllerConnectedIcon;
+                    if (image_controller_icon.Source != ControllerConnectedIcon) image_controller_icon.Source = ControllerConnectedIcon;
 
                     image_controller_icon.Opacity = enabled_opacity;
 
@@ -113,10 +105,8 @@ namespace DualSenseBatteryMonitor
                         //Make the charging icon dissapear
                         SetChargingIconActive(false);
 
-                        //Make sure the battery anim is stopped, to same performance on something that is not being rendered
                         UpdateBatteryAnim(batterylevel, false);
 
-                        //The batterylevel contains the error code
                         SetDebugErrorCode(batterylevel, true);
                     } 
                     else //No error code
@@ -143,12 +133,11 @@ namespace DualSenseBatteryMonitor
                     //Not connected for this index, hide it
                     Visibility = Visibility.Collapsed;
 
-                    UpdateBatteryAnim(0, true); //Stop blinking to improve performance
+                    UpdateBatteryAnim(0, true);
                 }
             }
         }
 
-        //Initializes the player color gradients
         private void InitializePlayerColors()
         {
             //Player 01
@@ -233,14 +222,11 @@ namespace DualSenseBatteryMonitor
             }
         }
 
-        //Assigns color to player index label
         private void updatePlayerColor()
         {
-            if (self_index >= 1 && self_index <= playerColors.Count)
-                count_index.Foreground = playerColors[self_index - 1];
+            if (self_index >= 1 && self_index <= playerColors.Count) count_index.Foreground = playerColors[self_index - 1];
         }
 
-        //Shows or hides the charging icon
         private void SetChargingIconActive(bool charging)
         {
             if (charging)
@@ -254,7 +240,6 @@ namespace DualSenseBatteryMonitor
 
         }
 
-        //This function is used to make the error code contained in the battery level variable visible as text
         private void SetDebugErrorCode(int errorCode, bool shouldShow)
         {
             if (shouldShow)
@@ -269,7 +254,6 @@ namespace DualSenseBatteryMonitor
             }
             else
             {
-                //Make the visibility command only run if the text is visible
                  if (debug_errorcode_text.Visibility == Visibility.Visible)
                 {
                     debug_errorcode_text.Visibility = Visibility.Collapsed;
@@ -294,11 +278,10 @@ namespace DualSenseBatteryMonitor
                     EndPoint = new Point(1, 0)
                 };
 
-                //Add colors to gradient
                 brush.GradientStops.Add(new GradientStop(ColorFromHue(hue, 0.7), 0.0));
                 brush.GradientStops.Add(new GradientStop(ColorFromHue(hue, 0.9), 1.0));
                 
-                //Freeze the brush
+
                 brush.Freeze();
 
                 //Add brush to gradientcache
@@ -312,7 +295,7 @@ namespace DualSenseBatteryMonitor
         //Converts hue to a color
         private static Color ColorFromHue(double hue, double darkness)
         {
-            // Normalize hue to [0, 360)
+            // Normalize hue to [0, 360}
             hue = hue % 360;
             if (hue < 0) hue += 360;
 

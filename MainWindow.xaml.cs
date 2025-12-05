@@ -1,25 +1,58 @@
 ﻿using HidSharp;
 using Microsoft.Win32;
 using System.Buffers;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Threading;
-using System.Diagnostics;
 
 namespace DualSenseBatteryMonitor
 {
     //DualSense Battery Monitor
     //By PixelIndieDev
 
+    public class rawData
+    {
+        public byte[]? InputBuffer { get; set; }
+        public int BytesRead { get; set; }
+
+        public rawData(byte[]? inputBuffer, int bytesRead)
+        {
+            InputBuffer = inputBuffer;
+            BytesRead = bytesRead;
+        }
+    }
+
+    public enum visibilityWindow
+    {
+        Invisible,
+        FadingIn,
+        Visible,
+        FadingOut
+    }
+
     public partial class MainWindow : Window
     {
-        //Create Timer
         private readonly DispatcherTimer updateTimer = new DispatcherTimer(DispatcherPriority.Background);
-        //Create controller verables
+        private readonly DispatcherTimer updateTimerHID = new DispatcherTimer(DispatcherPriority.Background);
+        private readonly DispatcherTimer batteryShowTimer = new DispatcherTimer(DispatcherPriority.Background);
+
         private controllerWidget[] controllerWidgets = new controllerWidget[4];
+        private IEnumerable<HidDevice>? latestControllers = null;
+        private rawData[] latestRawData = {
+            new (null, 889),
+            new (null, 889),
+            new (null, 889),
+            new (null, 889)
+        };
         private int LastControllerCount = 0;
+        private bool someoneHasLowBattery = false;
+        private bool someoneWantBatteryShow = false;
+        private visibilityWindow getWindowFadingStatus = visibilityWindow.Visible;
+        private static readonly int visibilityFadeTime = 100; //in ms
 
         //Low battery threshold
         private const int lowBatteryThreshold = 25;
@@ -27,6 +60,10 @@ namespace DualSenseBatteryMonitor
         //Used for sizing
         private double controllerWidgetHeight;
         private double controllerWidgetWidth;
+
+        //settings
+        private bool setting_StartOnStartUp = true;
+        private int setting_ShowBatteryStatusShowTime = 3; //in seconds
 
         private const int GWL_EXSTYLE = -20;
         private const int WS_EX_TOOLWINDOW = 0x00000080;
@@ -45,18 +82,21 @@ namespace DualSenseBatteryMonitor
 
             MakeWindowClickThroughAndNoActivate(); //Allow mouse to pass through and avoid focus
 
+            //check PS button press
+            updateTimerHID.Tick += new EventHandler(GetRawDataHID);
+            updateTimerHID.Interval = TimeSpan.FromMilliseconds(200);
+
+            batteryShowTimer.Tick += new EventHandler(updateBatteryShowCountdown);
+            batteryShowTimer.Interval = TimeSpan.FromSeconds(setting_ShowBatteryStatusShowTime);
+
             //Set up periodic update
             updateTimer.Tick += new EventHandler(updateTimer_Tick);
             //Interval every 5 seconds
-            updateTimer.Interval = new TimeSpan(0, 0, 5);
+            updateTimer.Interval = TimeSpan.FromSeconds(5);
 
-            //Freeze background gradient to save on memory
             gradient_background.Freeze();
 
             DoStart();
-
-            //This function will make this application always run on Windows startup
-            AddToStartup();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -82,8 +122,7 @@ namespace DualSenseBatteryMonitor
                     controllerWidgetHeight = controllerWidget.Height;
                     controllerWidgetWidth = controllerWidget.Width;
 
-                    //Already do this, this way this will only be triggered ones
-                    Width = (controllerWidget.Width + 40); // Padding
+                    Width = (controllerWidget.Width + 40);
                 }
 
                 double height = controllerWidget.Height;
@@ -93,7 +132,14 @@ namespace DualSenseBatteryMonitor
                 flowLayout_controller.Items.Add(FrameI);
             }
 
+            await GetRawDataHID();
             await CheckControllers(); //Initial controller scan
+        }
+
+        private void updateBatteryShowCountdown(object sender, EventArgs e)
+        {
+            batteryShowTimer.Stop();
+            someoneWantBatteryShow = false;
         }
 
         private async void updateTimer_Tick(object sender, EventArgs e)
@@ -110,7 +156,7 @@ namespace DualSenseBatteryMonitor
             var controllerBatterlevels = await GetDualSenseBatteryLevelsAsync();
             LastControllerCount = 0;
 
-            bool someoneHasLowBattery = false;
+            bool lowBattery = false;
 
             if (controllerBatterlevels.Count <= 0)
             {
@@ -123,9 +169,9 @@ namespace DualSenseBatteryMonitor
                     controllerWidgets[controllerBattery.Key].RefreshData((LastControllerCount+1), controllerBattery.Value.BatteryPercent, controllerBattery.Value.IsCharging);
 
                     //Check if this controller has low battery and no one else has already activated the bool trigger
-                    if (controllerBattery.Value.BatteryPercent < lowBatteryThreshold && someoneHasLowBattery == false)
+                    if (controllerBattery.Value.BatteryPercent < lowBatteryThreshold && lowBattery == false)
                     {
-                        someoneHasLowBattery = true;
+                        lowBattery = true;
                     }
 
                     LastControllerCount++;
@@ -133,14 +179,10 @@ namespace DualSenseBatteryMonitor
                 Refresh_FromControllerIndex(controllerBatterlevels.Count);
             }
 
-            //Resize window size
             UpdateWindowSize(controllerBatterlevels.Count);
 
-            //Update Window on screen or not
-            //Window will be on screen when a battery is lower then a certain amount
-            ShouldShowWindow(someoneHasLowBattery);
+            someoneHasLowBattery = lowBattery;
 
-            //Start timer again
             updateTimer.Start();
         }
 
@@ -164,8 +206,6 @@ namespace DualSenseBatteryMonitor
 
         private void UpdateWindowSize(int amount_children)
         {
-            //Set window height
-            //Each child gets its height + 10 (spacing)
             Height = amount_children*(controllerWidgetHeight+10);
         }
 
@@ -174,10 +214,42 @@ namespace DualSenseBatteryMonitor
             //Someone has low battery
             if (lowBattery)
             {
-                Show(); //Always visible when battery low
+                FadeInMainWindow(); //Always visible when battery low
             } else //No one has low battery
             {
-                Hide();
+                if (someoneWantBatteryShow) FadeInMainWindow();
+                else FadeOutMainWindow();
+            }
+        }
+
+        private void FadeInMainWindow()
+        {
+            if (getWindowFadingStatus == visibilityWindow.Invisible)
+            {
+                Show();
+                Opacity = 0;
+                var anim = new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(visibilityFadeTime));
+                anim.Completed += (s, a) =>
+                {
+                    getWindowFadingStatus = visibilityWindow.Visible;
+                };
+                getWindowFadingStatus = visibilityWindow.FadingIn;
+                BeginAnimation(Window.OpacityProperty, anim);
+            }
+        }
+
+        private void FadeOutMainWindow()
+        {
+            if (getWindowFadingStatus == visibilityWindow.Visible)
+            {
+                var anim = new System.Windows.Media.Animation.DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(visibilityFadeTime));
+                anim.Completed += (s, a) =>
+                {
+                    Hide();
+                    getWindowFadingStatus = visibilityWindow.Invisible;
+                };
+                getWindowFadingStatus = visibilityWindow.FadingOut;
+                BeginAnimation(Window.OpacityProperty, anim);
             }
         }
 
@@ -196,33 +268,116 @@ namespace DualSenseBatteryMonitor
             SetWindowLong(WindowInteropHelper, GWL_EXSTYLE, new_extended_style);
         }
 
-
-
-        private static async Task<Dictionary<int, (int BatteryPercent, bool IsCharging)>> GetDualSenseBatteryLevelsAsync()
+        private async void GetRawDataHID(object sender, EventArgs e)
         {
-            var result = new Dictionary<int, (int, bool)>();
+            await GetRawDataHID();
+        }
+
+        private async Task GetRawDataHID()
+        {
+            updateTimerHID.Stop();
+
             //Get the list of current HID devices
             var deviceList = DeviceList.Local;
             //Look for first Dualsense (1356 3302)
             var controllers = deviceList.GetHidDevices(1356, 3302); //Vendor/Product ID
+            latestControllers = controllers;
 
             int index = 0;
+            rawData[]? latestRawDataLocal = {
+                new (null, 889),
+                new (null, 889),
+                new (null, 889),
+                new (null, 889)
+            };
 
             foreach (var controller in controllers)
             {
-                byte[] inputBuffer = null; //Declare buffer outside for use in finally
+                byte[]? inputBuffer = null;
+                int bytesRead = 899;
 
                 try
                 {
-                    //Rent a byte array from the shared pool (avoids repeated allocations)
+                    //Rent a byte array from the shared pool
                     inputBuffer = ArrayPool<byte>.Shared.Rent(controller.GetMaxInputReportLength());
 
                     using (var stream = controller.Open())
                     {
                         await Task.Yield(); // Add a small delay before reading data
-                        int bytesRead = stream.Read(inputBuffer, 0, inputBuffer.Length);
+                        bytesRead = stream.Read(inputBuffer, 0, inputBuffer.Length);
 
-                        //If data is received from the controller, process it
+                        byte bufferLoc;
+                        //is USB
+                        if (bytesRead == 64) bufferLoc = 10;
+                        else bufferLoc = 11;
+
+                        if (someoneWantBatteryShow)
+                        {
+                            if (inputBuffer[bufferLoc] == 0x01) //pressing PS button
+                            {
+                                if (batteryShowTimer.IsEnabled)
+                                {
+                                    batteryShowTimer.Stop();
+                                    batteryShowTimer.Start();
+                                }
+                                else
+                                {
+                                    batteryShowTimer.Start();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (inputBuffer[bufferLoc] == 0x01) //pressing PS button
+                            {
+                                someoneWantBatteryShow = true;
+                                batteryShowTimer.Start();
+                            }
+                        }
+                    }
+
+                    latestRawDataLocal[index].InputBuffer = inputBuffer;
+                    latestRawDataLocal[index].BytesRead = bytesRead;
+                }
+                catch (Exception ex)
+                {
+                #if DEBUG
+                    Debug.WriteLine($"[Warning] Could not read controller: {ex.Message}");
+                #endif
+                }
+                finally
+                {
+                    //Always return the buffer to the pool, even on exception
+                    if (inputBuffer != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(inputBuffer);
+                    }
+
+                    index++;
+                }
+            }
+
+            latestRawData = latestRawDataLocal;
+
+            ShouldShowWindow(someoneHasLowBattery);
+
+            updateTimerHID.Start();
+        }
+
+        private async Task<Dictionary<int, (int BatteryPercent, bool IsCharging)>> GetDualSenseBatteryLevelsAsync()
+        {
+            var result = new Dictionary<int, (int, bool)>();
+            int index = 0;
+
+            if (latestControllers != null) //should not be possible
+            {
+                foreach (var controller in latestControllers)
+                {
+                    byte[]? inputBuffer = latestRawData[index].InputBuffer;
+                    int bytesRead = latestRawData[index].BytesRead;
+
+                    if (inputBuffer != null)
+                    {
                         if (bytesRead > 0)
                         {
                             //Check length of data read , USB is 64 and Bluetooth is 78
@@ -288,20 +443,6 @@ namespace DualSenseBatteryMonitor
                         }
                     }
                 }
-                catch (Exception ex)
-                {
-#if DEBUG
-                    Debug.WriteLine($"[Warning] Could not read controller: {ex.Message}");
-#endif
-                }
-                finally
-                {
-                    //Always return the buffer to the pool, even on exception
-                    if (inputBuffer != null)
-                    {
-                        ArrayPool<byte>.Shared.Return(inputBuffer);
-                    }
-                }
             }
 
             return result;
@@ -353,30 +494,7 @@ namespace DualSenseBatteryMonitor
             }
 
             //Calculate percentage
-            return (batterynumber0to8 * 100) / 8; //return the value
-        }
-
-        //Will at this program to the auto startup programs
-        private static void AddToStartup()
-        {
-            //Get .exe install location
-            string exePath = Process.GetCurrentProcess().MainModule.FileName;
-            //Get registry key location
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
-
-            //Check if the key is not NULL
-            if (key != null)
-            {
-                object existingValue = key.GetValue("DualSenseBatteryMonitor");
-
-                //When the existingvalue is NULL or the new and old value match
-                if (existingValue == null ||  !string.Equals(existingValue.ToString(), exePath, StringComparison.OrdinalIgnoreCase))
-                {
-                    //Add self to auto start up
-                    key.SetValue("DualSenseBatteryMonitor", "\"" + exePath + "\"");
-                } //If the value is not NULL and the string match, then do nothing
-
-            } //If key is null, do nothing
+            return (batterynumber0to8 * 100) / 8;
         }
     }
 }

@@ -67,6 +67,9 @@ This application is inspired by:
 * [filipmachalowski/TraySense](https://github.com/filipmachalowski/TraySense) – Tray app for battery status
 
 ## This project uses
+[**filipmachalowski/TraySense**](https://github.com/filipmachalowski/TraySense)
+* This project uses some parts of the code (like the ProcessControllerData function) for its functioning
+
 [**HIDSharp**](http://www.zer7.com/software/hidsharp)
 * Copyright 2010-2019 James F. Bellinger
 * Licensed under the Apache License, Version 2.0

@@ -53,7 +53,7 @@ To completely remove **DualSense Battery Monitor** from your system:
 2. Click on start on startup
    * If the option is checked, then it will start up on Windows startup. When uninstalling, you want this unchecked
 3. Click on exit
-2. **Delete the application files:** Remove the folder/insides of folder where you extracted the application.
+2. Delete the application files: remove the folder/insides of folder where you extracted the application.
 
 ## Common issues
 ### Holding the PS button (Home button) for ~1-1.5 sec keeps opening Steam Big Picture Mode/Steam overlay

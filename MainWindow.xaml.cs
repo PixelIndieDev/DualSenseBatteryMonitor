@@ -1,5 +1,6 @@
 ﻿using HidSharp;
 using Microsoft.Win32;
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -41,13 +42,8 @@ namespace DualSenseBatteryMonitor
         private readonly DispatcherTimer batteryShowTimer = new DispatcherTimer(DispatcherPriority.Background);
 
         private controllerWidget[] controllerWidgets = new controllerWidget[4];
-        private IEnumerable<HidDevice>? latestControllers = null;
-        private rawData[] latestRawData = {
-            new (null, 889),
-            new (null, 889),
-            new (null, 889),
-            new (null, 889)
-        };
+        private Dictionary<string, rawData> latestRawData = new Dictionary<string, rawData>(); //889
+        private Dictionary<string, HidDevice> hidDevicesByPath = new Dictionary<string, HidDevice>();
         private int LastControllerCount = 0;
         private bool someoneHasLowBattery = false;
         private bool someoneWantBatteryShow = false;
@@ -62,7 +58,6 @@ namespace DualSenseBatteryMonitor
         private double controllerWidgetWidth;
 
         //settings
-        private bool setting_StartOnStartUp = true;
         private int setting_ShowBatteryStatusShowTime = 3; //in seconds
 
         private const int GWL_EXSTYLE = -20;
@@ -281,29 +276,22 @@ namespace DualSenseBatteryMonitor
             var deviceList = DeviceList.Local;
             //Look for first Dualsense (1356 3302)
             var controllers = deviceList.GetHidDevices(1356, 3302); //Vendor/Product ID
-            latestControllers = controllers;
-
-            int index = 0;
-            rawData[]? latestRawDataLocal = {
-                new (null, 889),
-                new (null, 889),
-                new (null, 889),
-                new (null, 889)
-            };
 
             foreach (var controller in controllers)
             {
+                string deviceId = controller.DevicePath;
+                hidDevicesByPath[deviceId] = controller;
+
                 byte[]? inputBuffer = null;
                 int bytesRead = 899;
 
                 try
                 {
-                    //Rent a byte array from the shared pool
                     inputBuffer = ArrayPool<byte>.Shared.Rent(controller.GetMaxInputReportLength());
 
                     using (var stream = controller.Open())
                     {
-                        await Task.Yield(); // Add a small delay before reading data
+                        await Task.Yield();
                         bytesRead = stream.Read(inputBuffer, 0, inputBuffer.Length);
 
                         byte bufferLoc;
@@ -336,8 +324,10 @@ namespace DualSenseBatteryMonitor
                         }
                     }
 
-                    latestRawDataLocal[index].InputBuffer = inputBuffer;
-                    latestRawDataLocal[index].BytesRead = bytesRead;
+                    var copy = new byte[bytesRead];
+                    Array.Copy(inputBuffer, copy, bytesRead);
+
+                    latestRawData[deviceId] = new rawData(copy, bytesRead);
                 }
                 catch (Exception ex)
                 {
@@ -347,17 +337,9 @@ namespace DualSenseBatteryMonitor
                 }
                 finally
                 {
-                    //Always return the buffer to the pool, even on exception
-                    if (inputBuffer != null)
-                    {
-                        ArrayPool<byte>.Shared.Return(inputBuffer);
-                    }
-
-                    index++;
+                    if (inputBuffer != null) ArrayPool<byte>.Shared.Return(inputBuffer);
                 }
             }
-
-            latestRawData = latestRawDataLocal;
 
             ShouldShowWindow(someoneHasLowBattery);
 
@@ -367,82 +349,91 @@ namespace DualSenseBatteryMonitor
         private async Task<Dictionary<int, (int BatteryPercent, bool IsCharging)>> GetDualSenseBatteryLevelsAsync()
         {
             var result = new Dictionary<int, (int, bool)>();
-            int index = 0;
+            int slotIndex = 0;
 
-            if (latestControllers != null) //should not be possible
+            foreach (var pair in latestRawData)
             {
-                foreach (var controller in latestControllers)
+                var inputbuffer = pair.Value.InputBuffer;
+                var bytesRead = pair.Value.BytesRead;
+
+                if (inputbuffer == null || bytesRead <= 0) continue;
+
+                int battery = 0;
+                bool charging = false;
+
+                //Check length of data read , USB is 64 and Bluetooth is 78
+                if (bytesRead == 64)
                 {
-                    byte[]? inputBuffer = latestRawData[index].InputBuffer;
-                    int bytesRead = latestRawData[index].BytesRead;
-
-                    if (inputBuffer != null)
+                    //In USB mode battery info is at 53 and charging info is at 54
+                    //In USB mode charging seems to be 8 if charging and 0 when not
+                    battery = getBatteryPercentage(inputbuffer[53], inputbuffer[54]);
+                    charging = inputbuffer[54] > 0;
+                }
+                //Bluetooth has length of 78 and 3 modes:
+                else if (bytesRead == 78)
+                {
+                    //0x31 header - Full BT report
+                    if (inputbuffer[0] == 0x31)
                     {
-                        if (bytesRead > 0)
+                        //In Bluetooth mode 0x31 battery level is at 54 and charging info is at 55
+                        //In Bluetooth charging seems to be indicated by 16 if charging and 0 when not
+                        battery = getBatteryPercentage(inputbuffer[54], inputbuffer[55]);
+                        charging = inputbuffer[55] > 0;
+                    } //0x01 header may indicate two bluetooth modes - Basic or Minimal BT report
+                    else if (inputbuffer[0] == 0x01)
+                    {
+                        //Check for many 0's in the data (ignoring the first few bytes)
+                        int zeroCount = 0;
+                        for (int i = 1; i < inputbuffer.Length; i++)  // Start checking from byte 1 (after the 0x01 byte)
                         {
-                            //Check length of data read , USB is 64 and Bluetooth is 78
-                            if (bytesRead == 64)
+                            if (inputbuffer[i] == 0x00)
                             {
-                                //In USB mode battery info is at 53 and charging info is at 54
-                                //In USB mode charging seems to be 8 if charging and 0 when not
-                                result[index++] = (getBatteryPercentage(inputBuffer[53], inputBuffer[54]), inputBuffer[54] > 0);
-                            }
-                            //Bluetooth has length of 78 and 3 modes:
-                            else if (bytesRead == 78)
-                            {
-                                //0x31 header - Full BT report
-                                if (inputBuffer[0] == 0x31)
-                                {
-                                    //In Bluetooth mode 0x31 battery level is at 54 and charging info is at 55
-                                    //In Bluetooth charging seems to be indicated by 16 if charging and 0 when not
-                                    result[index++] = (getBatteryPercentage(inputBuffer[54], inputBuffer[55]), inputBuffer[55] > 0);
-                                } //0x01 header may indicate two bluetooth modes - Basic or Minimal BT report
-                                else if (inputBuffer[0] == 0x01)
-                                {
-                                    //Check for many 0's in the data (ignoring the first few bytes)
-                                    int zeroCount = 0;
-                                    for (int i = 1; i < inputBuffer.Length; i++)  // Start checking from byte 1 (after the 0x01 byte)
-                                    {
-                                        if (inputBuffer[i] == 0x00)
-                                        {
-                                            zeroCount++;
-                                        }
-                                    }
-                                    //0x01 may send only a few bytes that are indicating button presses and nothing else, most importantly no battery or charging info
-                                    //If most of data is empty then controller is in "Minimal Bluetooth"
-                                    //This mode is usually only seen when bluetooth module or pc was restarted and "fresh connection" is made
-                                    if (zeroCount > 70)
-                                    {
-                                        //Minimal Bluetooth mode (mostly empty), try waking up
-                                        //Read "Magic Packet" to "wake" controller to 0x31 (Full Bluetooth mode)
-                                        WaketofullBT(controller);
-                                        result[index++] = (1111, false);
-                                    }
-                                    else
-                                    {
-                                        //Basic Bluetooth mode, try waking up as well
-                                        WaketofullBT(controller);
-                                        //Use unreachable batterylevel for "error" code
-                                        result[index++] = (1111, false);
-                                    }
-
-                                }
-                                else
-                                {
-                                    //Unknown Bluetooth report format
-                                    //Use unreachable batterylevel for "error" code
-                                    result[index++] = (1115, false);
-                                }
-                            }
-                            else
-                            {
-                                //Unknown report length
-                                //Use unreachable batterylevel for "error" code
-                                result[index++] = (888, false); //Unknown format
+                                zeroCount++;
                             }
                         }
+                        //0x01 may send only a few bytes that are indicating button presses and nothing else, most importantly no battery or charging info
+                        //If most of data is empty then controller is in "Minimal Bluetooth"
+                        //This mode is usually only seen when bluetooth module or pc was restarted and "fresh connection" is made
+                        if (zeroCount > 70)
+                        {
+                            //Minimal Bluetooth mode (mostly empty), try waking up
+                            //Read "Magic Packet" to "wake" controller to 0x31 (Full Bluetooth mode)
+                            if (hidDevicesByPath.TryGetValue(pair.Key, out var device))
+                            {
+                                WaketofullBT(device);
+                            }
+                            battery = 1111;
+                            charging = false;
+                        }
+                        else
+                        {
+                            //Basic Bluetooth mode, try waking up as well
+                            if (hidDevicesByPath.TryGetValue(pair.Key, out var device))
+                            {
+                                WaketofullBT(device);
+                            }
+                            //Use unreachable batterylevel for "error" code
+                            battery = 1111;
+                            charging = false;
+                        }
+                    }
+                    else
+                    {
+                        //Unknown Bluetooth report format
+                        //Use unreachable batterylevel for "error" code
+                        battery = 1115;
+                        charging = false;
                     }
                 }
+                else
+                {
+                    //Unknown report length
+                    //Use unreachable batterylevel for "error" code
+                    battery = 888;
+                    charging = false;
+                }
+
+                result[slotIndex++] = (battery, charging);
             }
 
             return result;

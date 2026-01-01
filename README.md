@@ -1,14 +1,14 @@
-# DualSense Battery Monitor - Low Battery Warning Overlay for PS5 Controllers
+# DualSense Battery Monitor - Low battery warning overlay for PS5 controllers
 
 ![Screenshot of the DualSense battery monitor on a default Windows 11 desktop](https://github.com/PixelIndieDev/DualSenseBatteryMonitor/blob/main/readme_images/overlay_preview.avif?raw=true)
 <sub>Overlay is slightly oversized on image</sub>
 
-## Never Miss a Low Battery Warning Again
+## Never miss a low battery warning again
 **DualSense Battery Monitor** is a lightweight Windows utility that automatically alerts you with a **visual overlay** whenever any connected **PlayStation 5 DualSense controller** reaches a low battery level.
 
 * Auto-starts with Windows
 * Battery monitoring every 5 seconds
-* Only shows when battery is low
+* Only shows when battery is low, or when the user holds down the PS button
 * Silent
 
 > [!NOTE]
@@ -20,14 +20,14 @@ This utility is perfect for:
 * Multiplayer users with multiple controllers connected — the app tracks and displays each one with its own icon and battery status (Up to 4 DualSense controllers)
 * Users using the DualSense controller as a pointer/input device
 
-The app acts **only when needed**, showing a overlay with controller status **only when a low battery is detected**.
+The app acts **only when needed**, showing a overlay with controller status **only when a low battery is detected**, or **when the user holds down the PS button**.
 
 ## Features
 * **DualSense-aware overlay:** Shows connected PS5 controllers and their individual battery levels.
 * **Low battery detection:** If any controller drops below 25%, the widget appears and below 15% the effected controller's battery icon will start flashing.
 * **5-second refresh rate:** Battery status updates frequently and efficiently.
-* **Automatic Windows startup:** Uses registry-based startup (no Task Scheduler required).
 * **Invisible when not needed:** If no controller is low on battery, the widget remains hidden.
+* **Button to view the battery levels:** If any controllers has the PS button down (for ~1-1.5 sec), the overlay will show for a couple of seconds.
 * **Tested with firmware A-0630** (latest as of December 5, 2025).
 * **Framework-dependent and self-contained releases available.**
 * **Built using .NET 8.0.**

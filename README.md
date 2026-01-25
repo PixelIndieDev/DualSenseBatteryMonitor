@@ -70,7 +70,12 @@ This application is inspired by:
 
 [**HIDSharp**](http://www.zer7.com/software/hidsharp)
 * Copyright 2010-2019 James F. Bellinger
-* Licensed under the Apache License, Version 2.0
+* Licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt)
+
+[**DualSense SVG Vector**](https://www.svgrepo.com/svg/324525/dualsense)
+* Copyright Alex Martynov
+* Licensed under the [CC Attribution License](https://creativecommons.org/licenses/by/4.0/deed.en)
+* The DualSense Edge version of the DualSense SVG is a edited version of the original
 
 ## 📃 License
 MIT License. See [LICENSE](LICENSE) file for details.

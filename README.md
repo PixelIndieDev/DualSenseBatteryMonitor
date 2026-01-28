@@ -11,6 +11,9 @@
 * Only shows when battery is low, or when the user holds down the PS button
 * Silent
 
+> [!IMPORTANT]
+> DualSense Edge support comming soon in version 4.0.0
+
 > [!NOTE]
 > This only works on Windows systems
 

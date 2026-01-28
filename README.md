@@ -12,7 +12,7 @@
 * Silent
 
 > [!IMPORTANT]
-> DualSense Edge support comming soon in version 4.0.0
+> DualSense Edge support coming soon in version 4.0.0
 
 > [!NOTE]
 > This only works on Windows systems

@@ -63,8 +63,6 @@ This application is inspired by:
 ## 📃 License
 MIT License. See [LICENSE](LICENSE) file for details.
 
-DualSense Battery Monitor is an independent project and is not affiliated with Sony Interactive Entertainment.
-
 ## 🔍 Keywords
 DualSense battery overlay, DualSense Edge battery overlay, PS5 controller low battery, DualSense WPF utility, DualSense Windows auto-start, gamepad battery warning, .NET 8 controller tool, DualSense battery level Windows 10/11, low battery widget for DualSense, DualSense charge monitor, DualSense Edge charge monitor, controller battery status desktop
 

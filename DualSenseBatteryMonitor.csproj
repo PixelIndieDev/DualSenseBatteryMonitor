@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-	<UseWindowsForms>true</UseWindowsForms>
+	<UseWindowsForms>True</UseWindowsForms>
     <ApplicationIcon>icons\window\BatteryMonitor.ico</ApplicationIcon>
     <SignAssembly>False</SignAssembly>
     <EnableNETAnalyzers>False</EnableNETAnalyzers>
@@ -15,8 +15,17 @@
     <ErrorReport>none</ErrorReport>
 	<Optimize>True</Optimize>
 	<Authors>PixelIndieDev</Authors>
-    <VersionPrefix>3.1.0</VersionPrefix>
+    <VersionPrefix>4.0.0</VersionPrefix>
 	<ProduceReferenceAssembly>False</ProduceReferenceAssembly>
+	<Copyright>Copyright (c) 2025 PixelIndieDev (MIT License)</Copyright>
+	<Title>DualSense Battery Monitor</Title>
+	<Description>DualSense Battery Monitor is a lightweight Windows utility that automatically alerts you with a visual overlay whenever any connected PlayStation 5 DualSense controller reaches a low battery level.</Description>
+	<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+	<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+	<PackageProjectUrl>https://github.com/PixelIndieDev/DualSenseBatteryMonitor</PackageProjectUrl>
+	<RepositoryUrl>https://github.com/PixelIndieDev/DualSenseBatteryMonitor</RepositoryUrl>
+	<RepositoryType>git</RepositoryType>
+	<PackageTags>DualSense; DualSense Edge; PS5 controller; controller; battery; battery monitor; PS5 Edge controller; windows tool; couch gaming; playstation controller; playstation 5 controller</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -28,52 +37,31 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="icons\connection\**" />
-    <EmbeddedResource Remove="icons\connection\**" />
-    <None Remove="icons\connection\**" />
-    <Page Remove="icons\connection\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="icons\battery\battery.png" />
-    <None Remove="icons\battery\charging.png" />
-    <None Remove="icons\battery\warning.png" />
-    <None Remove="icons\controller\dualsense_connected.png" />
-    <None Remove="icons\controller\dualsense_not_connected.png" />
     <None Remove="icons\window\BatteryMonitor.ico" />
   </ItemGroup>
 
   <ItemGroup>
-    <Page Remove="icons\battery\battery.xaml" />
-    <Page Remove="icons\battery\charging.xaml" />
-    <Page Remove="icons\controller\dualsense_connected.xaml" />
-    <Page Remove="icons\controller\dualsense_connected_drawingimage.xaml" />
-    <Page Remove="icons\controller\dualsense_not_connected.xaml" />
+    <Page Remove="icons\iconLibrary.xaml" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="HidSharp" Version="2.1.0" />
+    <PackageReference Include="HidSharp" Version="2.6.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="icons\battery\battery.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="icons\battery\charging.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="icons\battery\warning.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="icons\controller\dualsense_connected.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="icons\controller\dualsense_not_connected.png">
+    <Resource Include="icons\iconLibrary.xaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="icons\window\BatteryMonitor.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

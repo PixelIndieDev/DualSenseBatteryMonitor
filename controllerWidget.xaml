@@ -17,11 +17,11 @@
 
     <Grid ClipToBounds="True" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <!-- Controller icon (changes on connection state) -->
-        <Image x:Name="image_controller_icon" HorizontalAlignment="Left" Height="125" Margin="0,0,0,0" VerticalAlignment="Center" Width="125" Stretch="UniformToFill" Source="/icons/controller/dualsense_connected.png" IsHitTestVisible="False" Opacity="0.7"/>
+        <Image x:Name="image_controller_icon" HorizontalAlignment="Left" Width="120" Height="120" Margin="0,0,0,0" VerticalAlignment="Center" Stretch="UniformToFill" Source="{StaticResource controller_DualSenseDrawingImage}" IsHitTestVisible="False" Opacity="0.7"/>
         <!-- Battery overlay icon -->
-        <Image x:Name="icon_battery" Height="125" Width="125" Stretch="UniformToFill" Source="/icons/battery/battery.png" Margin="50,0,0,0" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Right" IsHitTestVisible="False" ClipToBounds="True"></Image>
+        <Image x:Name="icon_battery" Height="125" Width="125" Stretch="UniformToFill" Source="{StaticResource battery_emptyDrawingImage}" Margin="50,0,0,0" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Right" IsHitTestVisible="False" ClipToBounds="True"></Image>
         <!-- Charging bolt icon (visible only when charging) -->
-        <Image x:Name="icon_charging" Height="30" Width="30" Stretch="UniformToFill" Source="/icons/battery/charging.png" Margin="50,0,0,0" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Right" IsHitTestVisible="False" ClipToBounds="True" Panel.ZIndex="2">
+        <Image x:Name="icon_charging" Height="30" Width="30" Stretch="UniformToFill" Source="{StaticResource chargingDrawingImage}" Margin="50,0,0,0" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Right" IsHitTestVisible="False" ClipToBounds="True" Panel.ZIndex="2">
             <Image.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -31,12 +31,14 @@
                 </TransformGroup>
             </Image.RenderTransform>
         </Image>
+        <!-- connection type icon -->
+        <Image x:Name="icon_connectiontype" Height="20" Width="20" Stretch="UniformToFill" Source="{StaticResource connection_UnknownDrawingImage}" Margin="0,80,180,25" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Right" IsHitTestVisible="False" ClipToBounds="True" Panel.ZIndex="2"></Image>
         <!-- low batterylevel warning icon -->
-        <Image x:Name="icon_batterywarning" Height="40" Width="40" Stretch="UniformToFill" Source="/icons/battery/warning.png" Margin="0,71,0,14" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Right" IsHitTestVisible="False" ClipToBounds="True" Panel.ZIndex="3" Visibility="Collapsed"/>
+        <Image x:Name="icon_batterywarning" Height="40" Width="40" Stretch="UniformToFill" Source="{StaticResource warningDrawingImage}" Margin="0,71,0,14" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Right" IsHitTestVisible="False" ClipToBounds="True" Panel.ZIndex="3" Visibility="Collapsed"/>
         <!-- Batterylevel progress bar -->
         <ProgressBar x:Name="progressbar_battery" HorizontalAlignment="Left" Height="37" Margin="151,0,0,0" VerticalAlignment="Center" Width="85" BorderBrush="{x:Null}" FlowDirection="RightToLeft" Background="{x:Null}" IsHitTestVisible="False" IsTabStop="False" Value="25" Panel.ZIndex="-1" SnapsToDevicePixels="True" />
         <!-- Controller index (1–4) with player color -->
-        <TextBlock x:Name="count_index" HorizontalAlignment="Left" Margin="44,20,0,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" FontSize="36" TextAlignment="Center" FontWeight="Bold" Width="36" FontFamily="Artifakt Element Black" Height="49" IsHitTestVisible="False" Foreground="White">
+        <TextBlock x:Name="count_index" HorizontalAlignment="Left" Margin="42,20,0,0" TextWrapping="Wrap" Text="1" VerticalAlignment="Top" FontSize="36" TextAlignment="Center" FontWeight="Bold" Width="36" FontFamily="Artifakt Element Black" Height="49" IsHitTestVisible="False" Foreground="White">
             <TextBlock.Effect>
                 <DropShadowEffect/>
             </TextBlock.Effect>

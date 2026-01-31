@@ -1,0 +1,40 @@
+﻿<Window x:Class="DualSenseBatteryMonitor.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DualSenseBatteryMonitor"
+        mc:Ignorable="d"
+        Title="DualSense Battery Monitor Settings" Height="450" Width="400" WindowStartupLocation="CenterScreen" Foreground="White" WindowStyle="SingleBorderWindow" SnapsToDevicePixels="True" Topmost="False" Focusable="True" IsHitTestVisible="True" ResizeMode="NoResize" ShowInTaskbar="True" Icon="/icons/window/BatteryMonitor.ico" ShowActivated="True">
+    <Window.Background>
+        <LinearGradientBrush x:Name="gradient_background" EndPoint="0,0" StartPoint="1,1" SpreadMethod="Pad">
+            <GradientStop Color="#FF00439C" Offset="0"/>
+            <GradientStop Color="#FF1F1F1F" Offset="1"/>
+        </LinearGradientBrush>
+    </Window.Background>
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" Text="Settings" FontSize="32" FontWeight="Bold" Foreground="White" Margin="0,0,0,10"/>
+        <StackPanel Grid.Row="1">
+            <CheckBox x:Name="RunOnStartupCheckBox" Content="Run on startup" FontSize="18" Foreground="White" Checked="RunOnStartupCheckBox_Changed" Unchecked="RunOnStartupCheckBox_Changed" Margin="0,10,0,0"/>
+            <TextBlock Text="Automatically launch the battery monitor when Windows starts" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>
+            
+            <CheckBox x:Name="ShowLowBatteryCheckBox" Content="Show low battery warning continuously" FontSize="18" Foreground="White" Checked="ShowLowBatteryCheckBox_Changed" Unchecked="ShowLowBatteryCheckBox_Changed" Margin="0,10,0,0"/>
+            <TextBlock Text="Keep the low battery warning visible until the controller is charged or the battery level is no longer low" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>
+            
+            <CheckBox x:Name="ShowErrorCheckBox" Content="Show error warning continuously" FontSize="18" Foreground="White" Checked="ShowErrorCheckBox_Changed" Unchecked="ShowErrorCheckBox_Changed" Margin="0,10,0,0"/>
+            <TextBlock Text="Keep error warnings visible until the issue is resolved" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>
+            
+            <CheckBox x:Name="WriteExceptionsCheckBox" Content="Write exceptions/errors in log file" FontSize="18" Foreground="White" Checked="WriteExceptionsCheckBox_Changed" Unchecked="WriteExceptionsCheckBox_Changed" Margin="0,10,0,0"/>
+            <TextBlock Text="Save error details to a log file when an error/exception occurs" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>
+        </StackPanel>
+        <StackPanel Grid.Row="2" Orientation="Vertical" HorizontalAlignment="Center">
+            <TextBlock x:Name="VersionTextBlock" Text="Version 1.0.0" FontSize="12" Foreground="#FFB0B0B0" HorizontalAlignment="Center"/>
+            <TextBlock Text="by PixelIndieDev" FontSize="11" Foreground="#FFB0B0B0" HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
+</Window>

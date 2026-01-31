@@ -48,7 +48,7 @@ Two versions are provided:
 This application is inspired by:
 * [nondebug/dualsense](https://github.com/nondebug/dualsense) – DualSense explorer tool
 * [filipmachalowski/TraySense](https://github.com/filipmachalowski/TraySense) – Tray app for battery status
-* [**filipmachalowski/TraySense**](https://github.com/filipmachalowski/TraySense) - This project contains some code that is inspired by the code in the TraySense project
+* [filipmachalowski/TraySense](https://github.com/filipmachalowski/TraySense) - This project contains some code that is inspired by the code in the TraySense project
 
 ## This project uses
 [**HIDSharp**](http://www.zer7.com/software/hidsharp)

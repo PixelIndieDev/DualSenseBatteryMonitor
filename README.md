@@ -2,7 +2,7 @@
 
 ![GitHub all releases](https://img.shields.io/github/downloads/PixelIndieDev/DualSenseBatteryMonitor/total?style=for-the-badge&color=32CD32) ![GitHub Repo stars](https://img.shields.io/github/stars/PixelIndieDev/DualSenseBatteryMonitor?style=for-the-badge&color=FFD700)
 
-<img src="https://github.com/PixelIndieDev/DualSenseBatteryMonitor/blob/main/readme_images/overlay_preview.png" alt="Screenshot of the DualSense battery monitor on a default Windows 11 desktop" width="512"/> <img src="https://github.com/PixelIndieDev/DualSenseBatteryMonitor/blob/main/readme_images/overlay_preview_with_settings.png" alt="Screenshot of the DualSense battery monitor with settings opened on a default Windows 11 desktop" width="512"/>
+<img src="https://github.com/PixelIndieDev/DualSenseBatteryMonitor/blob/main/readme_images/overlay_preview.png" alt="Screenshot of the DualSense battery monitor on a default Windows 11 desktop" width="750"/> <img src="https://github.com/PixelIndieDev/DualSenseBatteryMonitor/blob/main/readme_images/overlay_preview_with_settings.png" alt="Screenshot of the DualSense battery monitor with settings opened on a default Windows 11 desktop" width="750"/>
 
 <sub>In both previews, the overlay is applied to a default Windows 11 desktop for a cleaner preview of the application</sub>
 

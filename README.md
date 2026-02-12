@@ -37,12 +37,25 @@ The app acts **only when needed**, showing a overlay with controller status **on
 * **Framework-dependent and self-contained releases available.**
 * **Built using .NET 8.0.**
 
-## Installation & Download
-You can download the latest release [here](https://github.com/PixelIndieDev/DualSenseBatteryMonitor/releases).
+## Getting Started
+View [the wiki](https://github.com/PixelIndieDev/DualSenseBatteryMonitor/wiki) for instructions
+↓
+### Getting Started
+* [Installation Guide](https://github.com/PixelIndieDev/DualSenseBatteryMonitor/wiki/Installation-Guide)
+* [Configure Settings](https://github.com/PixelIndieDev/DualSenseBatteryMonitor/wiki/Configure-Settings)
+* [Supported Controllers](https://github.com/PixelIndieDev/DualSenseBatteryMonitor/wiki/Supported-Controllers)
 
-Two versions are provided:
-* **Framework-dependent** (.NET 8.0 required on system)
-* **Self-contained** (no dependencies — just run the executable with its files)
+---
+
+### Features & Usage
+* [Understanding Icons & Statuses](https://github.com/PixelIndieDev/DualSenseBatteryMonitor/wiki/Understanding-Icons-%26-Statuses)
+* [Button Mappings](https://github.com/PixelIndieDev/DualSenseBatteryMonitor/wiki/Button-Mappings)
+
+---
+
+### Troubleshooting
+* [Error Codes](https://github.com/PixelIndieDev/DualSenseBatteryMonitor/wiki/Error-Codes)
+* [Common Questions](https://github.com/PixelIndieDev/DualSenseBatteryMonitor/wiki/Common-Questions)
 
 ## Inspiration
 This application is inspired by:

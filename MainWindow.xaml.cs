@@ -147,8 +147,6 @@ namespace DualSenseBatteryMonitor
         {
             InitializeComponent();
 
-            MakeWindowClickThroughAndNoActivate(); //Allow mouse to pass through and avoid focus
-
             //check PS button press
             updateTimerHID.Tick += new EventHandler(GetRawDataHID);
             updateTimerHID.Interval = TimeSpan.FromMilliseconds(PSButtonCheckTimeMS);
@@ -213,6 +211,8 @@ namespace DualSenseBatteryMonitor
         private void MainWindow_SourceInitialized(object sender, EventArgs e)
         {
             deviceNotificationHelper.RegisterForDeviceNotifications(this);
+
+            MakeWindowClickThroughAndNoActivate(); //Allow mouse to pass through and avoid focus
 
             //Make it hide from the start
             Hide();

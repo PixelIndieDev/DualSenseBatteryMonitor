@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -33,12 +34,44 @@ namespace DualSenseBatteryMonitor
         private const string ErrorShowStyleSettingName = "ShowErrorWarningContinuously";
         private const string WriteExceptionsInLogFileSettingName = "WriteExceptionsInLogFile";
         private const string RunOnStartupSettingName = "RunOnStartup";
+        private const string ShowBatteryStatsTimeLeftName = "ShowBatteryStatsTimeLeft";
+        private const string ShowBatteryStatsTimeEstimateName = "ShowBatteryStatsTimeEstimate";
+        private const string DontSaveBatteryStatsName = "DontSaveBatteryStats";
 
         //threshold
         public static readonly int batteryErrorCodeTrehsold = 500;
 
+        //battery drain stats
+        public static int batteryDrainStatsErrorCode = -1;
+
+        // notifyiers
+        public static event Action? BatteryStatVisibilityChanged;
+        public static event Action? BatteryStatFileDeleted;
+
         private NotifyIcon? tray;
         private SettingsWindow? settingsWindow;
+
+        public static void WriteLog(string message)
+        {
+            //don't log when not wanting
+            if (App.GetWriteExceptionsInLogFileSetting())
+            {
+                //log file path
+                string filePath = "DualSenseExceptionLog.log";
+
+                try
+                {
+                    string logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}{Environment.NewLine}";
+
+                    //add to text file
+                    File.AppendAllText(filePath, logEntry);
+                }
+                catch (Exception)
+                {
+
+                }
+            }
+        }
         protected override void OnStartup(StartupEventArgs e)
         {
             bool createdNew;
@@ -190,6 +223,53 @@ namespace DualSenseBatteryMonitor
         {
             using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
             key.SetValue(WriteExceptionsInLogFileSettingName, enable ? 1 : 0, RegistryValueKind.DWord);
+        }
+
+        public static bool GetShowBatteryStatsTimeLeftSetting()
+        {
+            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            int value = (int)key.GetValue(ShowBatteryStatsTimeLeftName, 1);
+            return value == 1;
+        }
+        public static void SetShowBatteryStatsTimeLeftSetting(bool enable)
+        {
+            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            key.SetValue(ShowBatteryStatsTimeLeftName, enable ? 1 : 0, RegistryValueKind.DWord);
+
+            BatteryStatVisibilityChanged?.Invoke();
+        }
+
+        public static bool GetShowBatteryStatsTimeEstimateSetting()
+        {
+            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            int value = (int)key.GetValue(ShowBatteryStatsTimeEstimateName, 1);
+            return value == 1;
+        }
+        public static void SetShowBatteryStatsTimeEstimateSetting(bool enable)
+        {
+            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            key.SetValue(ShowBatteryStatsTimeEstimateName, enable ? 1 : 0, RegistryValueKind.DWord);
+
+            BatteryStatVisibilityChanged?.Invoke();
+        }
+
+        public static bool GetDontSaveBatteryStatsSetting()
+        {
+            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            int value = (int)key.GetValue(DontSaveBatteryStatsName, 1);
+            return value == 1;
+        }
+        public static void SetDontSaveBatteryStatsSetting(bool enable)
+        {
+            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            key.SetValue(DontSaveBatteryStatsName, enable ? 1 : 0, RegistryValueKind.DWord);
+
+            BatteryStatVisibilityChanged?.Invoke();
+
+            if (!enable)
+            {
+                BatteryStatFileDeleted?.Invoke();
+            }
         }
     }
 

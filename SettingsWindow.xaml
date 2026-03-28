@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DualSenseBatteryMonitor"
         mc:Ignorable="d"
-        Title="DualSense Battery Monitor Settings" Height="450" Width="400" WindowStartupLocation="CenterScreen" Foreground="White" WindowStyle="SingleBorderWindow" SnapsToDevicePixels="True" Topmost="False" Focusable="True" IsHitTestVisible="True" ResizeMode="NoResize" ShowInTaskbar="True" Icon="/icons/window/BatteryMonitor.ico" ShowActivated="True">
+        Title="DualSense Battery Monitor Settings" Height="650" Width="400" WindowStartupLocation="CenterScreen" Foreground="White" WindowStyle="SingleBorderWindow" SnapsToDevicePixels="True" Topmost="False" Focusable="True" IsHitTestVisible="True" ResizeMode="NoResize" ShowInTaskbar="True" Icon="/icons/window/BatteryMonitor.ico" ShowActivated="True">
     <Window.Background>
         <LinearGradientBrush x:Name="gradient_background" EndPoint="0,0" StartPoint="1,1" SpreadMethod="Pad">
             <GradientStop Color="#FF00439C" Offset="0"/>
@@ -25,10 +25,19 @@
             
             <CheckBox x:Name="ShowLowBatteryCheckBox" Content="Show low battery warning continuously" FontSize="18" Foreground="White" Checked="ShowLowBatteryCheckBox_Changed" Unchecked="ShowLowBatteryCheckBox_Changed" Margin="0,10,0,0"/>
             <TextBlock Text="Keep the low battery warning visible until the controller is charged or the battery level is no longer low" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>
-            
+
+            <CheckBox x:Name="ShowBatteryTimeLeftCheckBox" Content="Show battery time remaining" FontSize="18" Foreground="White" Checked="ShowBatteryTimeLeftCheckBox_Changed" Unchecked="ShowBatteryTimeLeftCheckBox_Changed" Margin="0,10,0,0"/>
+            <TextBlock x:Name="TextBlock_ShowBatteryTimeLeftDesc" Text="Shows an estimate of how much battery time is left based on previously known drain rate" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>
+
+            <CheckBox x:Name="ShowBatteryFullDrainCheckBox" Content="Show full charge duration" FontSize="18" Foreground="White" Checked="ShowBatteryFullDrainCheckBox_Changed" Unchecked="ShowBatteryFullDrainCheckBox_Changed" Margin="0,10,0,0"/>
+            <TextBlock x:Name="TextBlock_ShowBatteryFullDrainDesc" Text="Shows an estimate of how long a full charge lasts based on the observed drain rate" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>
+
             <CheckBox x:Name="ShowErrorCheckBox" Content="Show error warning continuously" FontSize="18" Foreground="White" Checked="ShowErrorCheckBox_Changed" Unchecked="ShowErrorCheckBox_Changed" Margin="0,10,0,0"/>
             <TextBlock Text="Keep error warnings visible until the issue is resolved" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>
-            
+
+            <CheckBox x:Name="DontSaveBatteryStatsCheckBox" Content="Don't save battery stats" FontSize="18" Foreground="White" Checked="DontSaveBatteryStatsCheckBox_Changed" Unchecked="DontSaveBatteryStatsCheckBox_Changed" Margin="0,10,0,0"/>
+            <TextBlock Text="Disables saving battery drain data to disk. Any saved stats will be deleted." FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>
+
             <CheckBox x:Name="WriteExceptionsCheckBox" Content="Write exceptions/errors in log file" FontSize="18" Foreground="White" Checked="WriteExceptionsCheckBox_Changed" Unchecked="WriteExceptionsCheckBox_Changed" Margin="0,10,0,0"/>
             <TextBlock Text="Save error details to a log file when an error/exception occurs" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>
         </StackPanel>

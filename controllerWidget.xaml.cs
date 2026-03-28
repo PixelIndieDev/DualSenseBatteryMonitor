@@ -70,6 +70,42 @@ namespace DualSenseBatteryMonitor
 
             //Set index in text block
             count_index.Text = self_index.ToString();
+
+            App.BatteryStatVisibilityChanged += OnBatteryStatVisibilityChanged;
+            App.BatteryStatFileDeleted += OnBatteryStatFileDeleted;
+        }
+
+        private void OnBatteryStatVisibilityChanged()
+        {
+            if (PossibilyDisableBatteryStats()) return;
+
+            if (App.batteryDrainStatsErrorCode <= App.batteryErrorCodeTrehsold)
+            {
+                text_drainstat_average.Visibility = App.GetShowBatteryStatsTimeEstimateSetting() ? Visibility.Visible : Visibility.Collapsed;
+
+                text_drainstat_Deco02.Visibility = App.GetShowBatteryStatsTimeLeftSetting() ? Visibility.Visible : Visibility.Collapsed;
+                text_drainstat_left.Visibility = App.GetShowBatteryStatsTimeLeftSetting() ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        private void OnBatteryStatFileDeleted()
+        {
+            ResetBatteryStatText();
+        }
+
+        private bool PossibilyDisableBatteryStats()
+        {
+            bool disable = App.GetDontSaveBatteryStatsSetting();
+            if (disable)
+            {
+                text_drainstat_error.Visibility = Visibility.Collapsed;
+
+                text_drainstat_average.Visibility = Visibility.Collapsed;
+                text_drainstat_left.Visibility = Visibility.Collapsed;
+                text_drainstat_Deco02.Visibility = Visibility.Collapsed;
+            }
+
+            return disable;
         }
 
         private void SetDualSenseIcon(bool isEdge)
@@ -84,8 +120,14 @@ namespace DualSenseBatteryMonitor
             }
         }
 
-        //Updates the widget based on controller count, battery level, and charging status
+        // auto null when drainestimate is not added in function
         public void RefreshData(int controllerAmount, int batterylevel, bool isCharging, ConnectionTypeEnum ConnectionType, bool isEdge)
+        {
+            RefreshData(controllerAmount, batterylevel, isCharging, ConnectionType, isEdge, null);
+        }
+
+        //Updates the widget based on controller count, battery level, and charging status
+        public void RefreshData(int controllerAmount, int batterylevel, bool isCharging, ConnectionTypeEnum ConnectionType, bool isEdge, TimeSpan? drainEstimate)
         {
             //no Controllers
             if (controllerAmount == 0)
@@ -143,6 +185,8 @@ namespace DualSenseBatteryMonitor
                         UpdateBatteryAnim(batterylevel, false);
 
                         SetDebugErrorCode(batterylevel, true);
+
+                        UpdateDrainStatLabel(); //remove drain stat label
                     }
                     else //No error code
                     {
@@ -164,6 +208,9 @@ namespace DualSenseBatteryMonitor
 
                         //Make debug error code stop displaying
                         SetDebugErrorCode(0, false);
+
+                        //update stats beneath controller
+                        UpdateDrainStatLabel(drainEstimate, batterylevel); //don't pass valid stats when charging
                     }
                 }
                 else
@@ -172,8 +219,66 @@ namespace DualSenseBatteryMonitor
                     Visibility = Visibility.Collapsed;
 
                     UpdateBatteryAnim(0, true);
+                    UpdateDrainStatLabel(); //remove drain stat label
                 }
             }
+        }
+
+        private void UpdateDrainStatLabel()
+        {
+            UpdateDrainStatLabel(null, -1);
+        }
+
+        private void UpdateDrainStatLabel(TimeSpan? estimate, int currentBatteryLevel)
+        {
+            if (PossibilyDisableBatteryStats()) return;
+
+            bool hasError = App.batteryDrainStatsErrorCode > App.batteryErrorCodeTrehsold;
+            bool showStats = estimate != null && !hasError;
+            Visibility newVisError = hasError ? Visibility.Visible : Visibility.Collapsed;
+
+            if (hasError)
+            {
+                Visibility otherVis = newVisError == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+                if (text_drainstat_error.Visibility != newVisError)
+                {
+                    text_drainstat_error.Visibility = newVisError;
+
+                    text_drainstat_average.Visibility = otherVis;
+                    text_drainstat_left.Visibility = otherVis;
+                    text_drainstat_Deco02.Visibility = otherVis;
+                }
+                return;
+            }
+
+            Visibility newVisTimeLeft = App.GetShowBatteryStatsTimeLeftSetting() ? Visibility.Visible : Visibility.Collapsed;
+            Visibility newVisTimeEstimate = App.GetShowBatteryStatsTimeEstimateSetting() ? Visibility.Visible : Visibility.Collapsed;
+            if (showStats)
+            {
+                TimeSpan remaining = TimeSpan.FromMinutes(estimate!.Value.TotalMinutes * (currentBatteryLevel / 100.0));
+                text_drainstat_average.Text = $"~{(int)estimate.Value.TotalHours:D2}h {estimate.Value.Minutes:D2}m";
+                text_drainstat_left.Text = $"~{(int)remaining.TotalHours:D2}h {remaining.Minutes:D2}m";
+            } else
+            {
+                ResetBatteryStatText();
+            }
+
+            if (text_drainstat_average.Visibility != newVisTimeEstimate)
+            {
+                text_drainstat_average.Visibility = newVisTimeEstimate;
+            }
+
+            if (text_drainstat_left.Visibility != newVisTimeLeft)
+            {
+                text_drainstat_left.Visibility = newVisTimeLeft;
+                text_drainstat_Deco02.Visibility = newVisTimeLeft;
+            }
+        }
+
+        private void ResetBatteryStatText()
+        {
+            text_drainstat_average.Text = "~--h --m";
+            text_drainstat_left.Text = "~--h --m";
         }
 
         private void InitializePlayerColors()

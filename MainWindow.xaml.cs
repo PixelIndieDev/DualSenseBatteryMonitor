@@ -1,5 +1,6 @@
 ﻿using HidSharp;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -125,8 +126,19 @@ namespace DualSenseBatteryMonitor
 
         private visibilityReason reasonForVisibility = visibilityReason.None;
 
-        // Debug
-        // DON'T FORGET TO CHANGE THESE VALUES BACK IN RELEASE
+        // Debug variables
+#if DEBUG
+        private const bool Debug_AlwaysShowWindow = false;
+        private const bool Debug_DisableGeneralErrorCodeRemoval = false;
+        private const bool Debug_OverrideBatteryLevelRead = false;
+        private const byte Debug_OverrideBatteryLevelValue = 12;
+        private const bool Debug_OverrideChargingRead = false;
+        private const bool Debug_OverrideChargingValue = false;
+        private const bool Debug_OverrideControllers = true;
+        private byte[] overrideControllersBatteryLevels = { 95, 30, 35, 10 }; //default battery levels fro the override controllers
+        private static readonly byte[] Debug_DrainControllers = { 0, 1, 2, 3 }; //from 0-3
+        private const byte Debug_DrainRate = 5;
+#else
         private const bool Debug_AlwaysShowWindow = false;
         private const bool Debug_DisableGeneralErrorCodeRemoval = false;
         private const bool Debug_OverrideBatteryLevelRead = false;
@@ -134,6 +146,10 @@ namespace DualSenseBatteryMonitor
         private const bool Debug_OverrideChargingRead = false;
         private const bool Debug_OverrideChargingValue = false;
         private const bool Debug_OverrideControllers = false;
+        private byte[] overrideControllersBatteryLevels = { }; //default battery levels fro the override controllers
+        private static readonly byte[] Debug_DrainControllers = { }; //from 0-3
+        private const byte Debug_DrainRate = 0;
+#endif
 
         // imports
         [DllImport("user32.dll", SetLastError = true)]
@@ -172,29 +188,6 @@ namespace DualSenseBatteryMonitor
             deviceNotificationHelper.DeviceDisconnected += OnDeviceDisconnected;
 
             this.SourceInitialized += MainWindow_SourceInitialized;
-        }
-
-        //log write function obviously
-        private void WriteLog(string message)
-        {
-            //don't log when not wanting
-            if (App.GetWriteExceptionsInLogFileSetting())
-            {
-                //log file path
-                string filePath = "DualSenseExceptionLog.log";
-
-                try
-                {
-                    string logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}{Environment.NewLine}";
-
-                    //add to text file
-                    File.AppendAllText(filePath, logEntry);
-                }
-                catch (Exception)
-                {
-
-                }
-            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -378,12 +371,12 @@ namespace DualSenseBatteryMonitor
             {
                 //checking controller error
                 AddGeneralErrorCode(654);
-                WriteLog("checkcontrollerFunction() | Exception - " + e);
+                App.WriteLog("checkcontrollerFunction() | Exception - " + e);
 
                 if (!nodeviceBackupTimer.IsEnabled)
                 {
                     nodeviceBackupTimer.Start();
-                    WriteLog("checkcontrollerFunction() | error - started backup timer");
+                    App.WriteLog("checkcontrollerFunction() | error - started backup timer");
                 }
             }
             finally
@@ -409,7 +402,7 @@ namespace DualSenseBatteryMonitor
                 //getting the hid devices failed
                 if (cachedDevices == null) cachedDevices = new List<HidDevice>();
                 AddGeneralErrorCode(640);
-                WriteLog("UpdateDeviceList() | Exception - " + e);
+                App.WriteLog("UpdateDeviceList() | Exception - " + e);
             }
         }
 
@@ -433,7 +426,8 @@ namespace DualSenseBatteryMonitor
                     var devicePath = controllerBattery.Key;
                     var batteryData = controllerBattery.Value;
 
-                    controllerWidgets[LastControllerCount].RefreshData((LastControllerCount + 1), batteryData.BatteryPercent, batteryData.IsCharging, batteryData.ConnectionType, batteryData.IsEdge);
+                    TimeSpan? drainEstimate = BatterySessionTracker.EstimateFullDrainTime(devicePath);
+                    controllerWidgets[LastControllerCount].RefreshData((LastControllerCount + 1), batteryData.BatteryPercent, batteryData.IsCharging, batteryData.ConnectionType, batteryData.IsEdge, drainEstimate);
 
                     if (batteryData.BatteryPercent > App.batteryErrorCodeTrehsold && batteryStartWith8(batteryData.BatteryPercent)) //error codes starting with 8 are "controller sided"
                     {
@@ -445,7 +439,7 @@ namespace DualSenseBatteryMonitor
                         //the smallest number has priority
                         batteryData.BatteryPercent = generalErrorCodes.Min();
                         //update widget
-                        controllerWidgets[LastControllerCount].RefreshData((LastControllerCount + 1), batteryData.BatteryPercent, batteryData.IsCharging, batteryData.ConnectionType, batteryData.IsEdge);
+                        controllerWidgets[LastControllerCount].RefreshData((LastControllerCount + 1), batteryData.BatteryPercent, batteryData.IsCharging, batteryData.ConnectionType, batteryData.IsEdge, drainEstimate);
                     }
                     else
                     {
@@ -541,7 +535,7 @@ namespace DualSenseBatteryMonitor
 
         private async void onEndTimerBackupnoDevices(object sender, EventArgs e)
         {
-            WriteLog("Backup timer triggered - retrying CheckControllers");
+            App.WriteLog("Backup timer triggered - retrying CheckControllers");
             await checkcontrollerFunction();
         }
 
@@ -662,12 +656,12 @@ namespace DualSenseBatteryMonitor
 
             if (Debug_AlwaysShowWindow)
             {
-#pragma warning disable CS0162 
+#pragma warning disable CS0162
                 if (getWindowFadingStatus == visibilityWindow.Invisible)
                 {
                     FadeInMainWindow();
                 }
-#pragma warning restore CS0162 
+#pragma warning restore CS0162
                 return;
             }
 
@@ -854,7 +848,7 @@ namespace DualSenseBatteryMonitor
             catch (Exception e)
             {
                 AddGeneralErrorCode(656);
-                WriteLog("RawDataHIDFunction() | Exception - " + e);
+                App.WriteLog("RawDataHIDFunction() | Exception - " + e);
             }
             finally
             {
@@ -932,12 +926,12 @@ namespace DualSenseBatteryMonitor
                 catch (System.IO.IOException e)
                 {
                     //controller got disconnected while checking
-                    WriteLog("GetRawDataHID() | System IOException - " + e);
+                    App.WriteLog("GetRawDataHID() | System IOException - " + e);
                 }
                 catch (Exception e)
                 {
                     AddGeneralErrorCode(655);
-                    WriteLog("GetRawDataHID() | Exception - " + e);
+                    App.WriteLog("GetRawDataHID() | Exception - " + e);
                 }
                 finally
                 {
@@ -965,6 +959,8 @@ namespace DualSenseBatteryMonitor
 
         private void RemoveControllerFunction(string deviceID)
         {
+            BatterySessionTracker.OnDeviceDisconnected(deviceID); //reste active session for device
+
             latestRawData.Remove(deviceID);
             hidDevicesByPath.Remove(deviceID);
             RemoveLowBatteryWarning(deviceID);
@@ -982,13 +978,28 @@ namespace DualSenseBatteryMonitor
 
             if (Debug_OverrideControllers)
             {
-#pragma warning disable CS0162 
-                result["0"] = (95, true, ConnectionTypeEnum.USB, false);
-                result["1"] = (30, true, ConnectionTypeEnum.USB, true);
-                result["2"] = (35, false, ConnectionTypeEnum.Bluetooth, true);
-                result["3"] = (10, false, ConnectionTypeEnum.Bluetooth, false);
+                foreach (byte controller in Debug_DrainControllers)
+                {
+                    int newLevel = (int)overrideControllersBatteryLevels[controller] - (int)Debug_DrainRate;
+                    overrideControllersBatteryLevels[controller] = (byte)Math.Clamp(newLevel, 0, 100);
+                }
+
+#pragma warning disable CS0162
+                result["CustomPath0" + 0] = (overrideControllersBatteryLevels[0], Debug_OverrideChargingValue, ConnectionTypeEnum.USB, false);
+                result["CustomPath0" + 1] = (overrideControllersBatteryLevels[1], Debug_OverrideChargingValue, ConnectionTypeEnum.USB, true);
+                result["CustomPath0" + 2] = (overrideControllersBatteryLevels[2], Debug_OverrideChargingValue, ConnectionTypeEnum.Bluetooth, true);
+                result["CustomPath0" + 3] = (overrideControllersBatteryLevels[3], Debug_OverrideChargingValue, ConnectionTypeEnum.Bluetooth, false);
+
+                for (int i = 0; i < 4; i++)
+                {
+                    if (overrideControllersBatteryLevels[i] <= App.batteryErrorCodeTrehsold)
+                    {
+                        String fakePath = "CustomPath0" + i;
+                        BatterySessionTracker.RecordReading(fakePath, overrideControllersBatteryLevels[i], false);
+                    }
+                }
                 return result;
-#pragma warning restore CS0162 
+#pragma warning restore CS0162
             }
 
             foreach (var pair in latestRawData)
@@ -1103,6 +1114,12 @@ namespace DualSenseBatteryMonitor
 
                 result[devicePath] = (battery, charging, connectionType, isEdge);
 
+                //update batterystats
+                if (battery <= App.batteryErrorCodeTrehsold)
+                {
+                    BatterySessionTracker.RecordReading(devicePath, battery, Debug_OverrideChargingRead ? Debug_OverrideChargingValue : charging);
+                }
+
                 if (charging)
                 {
                     RemoveLowBatteryWarning(devicePath);
@@ -1155,30 +1172,30 @@ namespace DualSenseBatteryMonitor
             catch (System.IO.IOException e)
             {
                 //controller disconnect or was busy while checking
-                WriteLog("WaketofullBT(HidDevice controller) | System IOException - " + e);
+                App.WriteLog("WaketofullBT(HidDevice controller) | System IOException - " + e);
             }
             catch (Exception e)
             {
                 //Catch exception wake
                 AddGeneralErrorCode(771);
-                WriteLog("WaketofullBT(HidDevice controller) | Exception - " + e);
+                App.WriteLog("WaketofullBT(HidDevice controller) | Exception - " + e);
             }
         }
 
         private bool getIsCharging(int chargingByte, int threshold)
         {
-#pragma warning disable CS0162 
+#pragma warning disable CS0162
             if (Debug_OverrideChargingRead) return Debug_OverrideChargingValue;
-#pragma warning restore CS0162 
+#pragma warning restore CS0162
 
             return chargingByte > threshold;
         }
 
         private int getBatteryPercentage(int battery0, int battery1)
         {
-#pragma warning disable CS0162 
+#pragma warning disable CS0162
             if (Debug_OverrideBatteryLevelRead) return Debug_OverrideBatteryLevelValue;
-#pragma warning restore CS0162 
+#pragma warning restore CS0162
 
             //Last 4 bits mark battery level
             //Battery level is on a scale 0 (empty) - 8 (full)

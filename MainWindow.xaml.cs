@@ -136,8 +136,8 @@ namespace DualSenseBatteryMonitor
         private const bool Debug_OverrideChargingValue = false;
         private const bool Debug_OverrideControllers = true;
         private byte[] overrideControllersBatteryLevels = { 95, 30, 35, 10 }; //default battery levels fro the override controllers
-        private static readonly byte[] Debug_DrainControllers = { 0, 1, 2, 3 }; //from 0-3
-        private const byte Debug_DrainRate = 0;
+        private static readonly byte[] Debug_DrainControllers = { 1, 2, 3 }; //from 0-3
+        private const byte Debug_DrainRate = 3;
 #else
         private const bool Debug_AlwaysShowWindow = false;
         private const bool Debug_DisableGeneralErrorCodeRemoval = false;
@@ -985,7 +985,7 @@ namespace DualSenseBatteryMonitor
                 }
 
 #pragma warning disable CS0162
-                result["CustomPath0" + 0] = (overrideControllersBatteryLevels[0], Debug_OverrideChargingValue, ConnectionTypeEnum.USB, false);
+                result["CustomPath0" + 0] = (overrideControllersBatteryLevels[0], true, ConnectionTypeEnum.USB, false);
                 result["CustomPath0" + 1] = (overrideControllersBatteryLevels[1], Debug_OverrideChargingValue, ConnectionTypeEnum.USB, true);
                 result["CustomPath0" + 2] = (overrideControllersBatteryLevels[2], Debug_OverrideChargingValue, ConnectionTypeEnum.Bluetooth, true);
                 result["CustomPath0" + 3] = (overrideControllersBatteryLevels[3], Debug_OverrideChargingValue, ConnectionTypeEnum.Bluetooth, false);
@@ -995,7 +995,7 @@ namespace DualSenseBatteryMonitor
                     if (overrideControllersBatteryLevels[i] <= App.batteryErrorCodeTrehsold)
                     {
                         String fakePath = "CustomPath0" + i;
-                        BatterySessionTracker.RecordReading(fakePath, overrideControllersBatteryLevels[i], false);
+                        BatterySessionTracker.RecordReading(fakePath, overrideControllersBatteryLevels[i], i == 0 ? true : false);
                     }
                 }
                 return result;

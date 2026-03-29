@@ -41,11 +41,11 @@ namespace DualSenseBatteryMonitor
         private const int MaxSegmentsPerDevice = 100;
         private const float MinAmountOfTime = 0.01f;
 #if DEBUG
-        private const float MinAmountOfPercentage = 0.0f; //minimum needed before displaying the live estimate
+        private const float MinAmountOfPercentage = 12.0f; //minimum needed before displaying the live estimate
         private const int MinAmountOfSegmentsNeeded = 1; //minimum needed before displaying the live estimate
         private const float MinAmountOfTimeNeeded = 0.01f; //minimum needed before displaying the live estimate, in minutes
 #else
-        private const float MinAmountOfPercentage = 5.0f;
+        private const float MinAmountOfPercentage = 12.0f;
         private const int MinAmountOfSegmentsNeeded = 1;
         private const float MinAmountOfTimeNeeded = 10.0f;
 #endif
@@ -57,11 +57,17 @@ namespace DualSenseBatteryMonitor
         {
             public int LastBatteryPercent { get; set; }
             public DateTime LastReadingTime { get; set; }
-            public bool WasCharging { get; set; }
         }
         private static readonly Dictionary<string, ActiveState> activeDrainDataStates = new();
 
         static BatterySessionTracker() => LoadData();
+
+        private static void ClearOlderSessions(string devicePath, DeviceDrainData existingData)
+        {
+            existingData.CachedEstimated = EstimateFullDrainTime(devicePath);
+            existingData.Segments.Clear();
+            existingData.PendingMinutes = 0;
+        }
 
         public static void RecordReading(string devicePath, int batteryPercent, bool isCharging)
         {
@@ -78,8 +84,13 @@ namespace DualSenseBatteryMonitor
                 {
                     LastBatteryPercent = batteryPercent,
                     LastReadingTime = DateTime.Now,
-                    WasCharging = isCharging,
                 };
+
+                if (drainData.TryGetValue(devicePath, out var existingData) && existingData.Segments.Any() && existingData.Segments.Last().BatteryLevel < (byte)batteryPercent)
+                {
+                    ClearOlderSessions(devicePath, existingData);
+                }
+
                 return;
             }
 
@@ -88,17 +99,11 @@ namespace DualSenseBatteryMonitor
             {
                 state!.LastBatteryPercent = batteryPercent;
                 state.LastReadingTime = DateTime.Now;
-                state.WasCharging = true;
-                return;
-            }
 
-            // just stopped charging
-            // the jump from charge-level to normal-level isn't a real drain reading
-            if (state!.WasCharging)
-            {
-                state.LastBatteryPercent = batteryPercent;
-                state.LastReadingTime = DateTime.Now;
-                state.WasCharging = false;
+                if (drainData.ContainsKey(devicePath))
+                {
+                    drainData[devicePath].PendingMinutes = 0;
+                }
                 return;
             }
 
@@ -106,9 +111,25 @@ namespace DualSenseBatteryMonitor
             double dropped = state.LastBatteryPercent - batteryPercent;
             double minutesPassed = (DateTime.Now - state.LastReadingTime).TotalMinutes;
 
-            // Only track if battery actually dropped and some time has passed
-            // avoids noise from the 0-8 step scale
-            if (dropped > 0 && minutesPassed >= MinAmountOfTime)
+            //battery went up, so was charged
+            if (dropped < 0)
+            {
+                if (drainData.ContainsKey(devicePath))
+                {
+                    ClearOlderSessions(devicePath, drainData[devicePath]);
+                }
+
+                //just in case
+                if (drainData.ContainsKey(devicePath))
+                {
+                    drainData[devicePath].PendingMinutes = 0;
+                }
+
+                state.LastBatteryPercent = batteryPercent;
+                state.LastReadingTime = DateTime.Now;
+                return;
+            } else if (dropped > 0 && minutesPassed >= MinAmountOfTime) // Only track if battery actually dropped and some time has passed
+                                                                        // avoids noise from the 0-8 step scale
             {
                 var segment = new DrainSegment
                 {
@@ -123,14 +144,8 @@ namespace DualSenseBatteryMonitor
                     drainData[devicePath] = new DeviceDrainData();
                 }
 
-                //older sessions are invalid
-                if (drainData[devicePath].Segments.Any() && drainData[devicePath].Segments.Last().BatteryLevel < (byte)batteryPercent)
-                {
-                    drainData[devicePath].CachedEstimated = EstimateFullDrainTime(devicePath);
-                    drainData[devicePath].Segments.Clear();
-                }
-
                 drainData[devicePath].Segments.Add(segment);
+                drainData[devicePath].PendingMinutes = 0;
 
                 // trim and keep most recent
                 if (drainData[devicePath].Segments.Count > MaxSegmentsPerDevice)
@@ -139,7 +154,8 @@ namespace DualSenseBatteryMonitor
                 }
 
                 SaveData();
-            } else
+            }
+            else
             {
                 if (!drainData.ContainsKey(devicePath))
                 {
@@ -221,6 +237,7 @@ namespace DualSenseBatteryMonitor
             }
         }
 
+        //runs when turning of data in the settings
         public static void DeleteData()
         {
             try

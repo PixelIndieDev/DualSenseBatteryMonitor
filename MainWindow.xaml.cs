@@ -128,7 +128,7 @@ namespace DualSenseBatteryMonitor
 
         // Debug variables
 #if DEBUG
-        private const bool Debug_AlwaysShowWindow = false;
+        private const bool Debug_AlwaysShowWindow = true;
         private const bool Debug_DisableGeneralErrorCodeRemoval = false;
         private const bool Debug_OverrideBatteryLevelRead = false;
         private const byte Debug_OverrideBatteryLevelValue = 12;
@@ -137,7 +137,7 @@ namespace DualSenseBatteryMonitor
         private const bool Debug_OverrideControllers = true;
         private byte[] overrideControllersBatteryLevels = { 95, 30, 35, 10 }; //default battery levels fro the override controllers
         private static readonly byte[] Debug_DrainControllers = { 0, 1, 2, 3 }; //from 0-3
-        private const byte Debug_DrainRate = 5;
+        private const byte Debug_DrainRate = 0;
 #else
         private const bool Debug_AlwaysShowWindow = false;
         private const bool Debug_DisableGeneralErrorCodeRemoval = false;

@@ -30,6 +30,8 @@ namespace DualSenseBatteryMonitor
     {
         public List<DrainSegment> Segments { get; set; } = new();
         public TimeSpan? CachedEstimated { get; set; }
+
+        public double PendingMinutes { get; set; }
     }
 
     public static class BatterySessionTracker
@@ -44,7 +46,7 @@ namespace DualSenseBatteryMonitor
         private const float MinAmountOfTimeNeeded = 0.01f; //minimum needed before displaying the live estimate, in minutes
 #else
         private const float MinAmountOfPercentage = 5.0f;
-        private const int MinAmountOfSegmentsNeeded = 3;
+        private const int MinAmountOfSegmentsNeeded = 1;
         private const float MinAmountOfTimeNeeded = 10.0f;
 #endif
 
@@ -66,7 +68,7 @@ namespace DualSenseBatteryMonitor
             if (App.GetDontSaveBatteryStatsSetting()) return;
 
             // dont read when errored out
-            if (batteryPercent > App.batteryErrorCodeTrehsold) return;
+            if (batteryPercent >= App.batteryErrorCodeTrehsold) return;
 
             bool hasState = activeDrainDataStates.TryGetValue(devicePath, out var state);
             if (!hasState)
@@ -137,6 +139,15 @@ namespace DualSenseBatteryMonitor
                 }
 
                 SaveData();
+            } else
+            {
+                if (!drainData.ContainsKey(devicePath))
+                {
+                    drainData[devicePath] = new DeviceDrainData();
+                }
+
+                drainData[devicePath].PendingMinutes += minutesPassed;
+                SaveData();
             }
 
             state.LastBatteryPercent = batteryPercent;
@@ -156,16 +167,16 @@ namespace DualSenseBatteryMonitor
 
             if (!drainData.TryGetValue(devicePath, out var data)) return null;
 
-            TimeSpan? liveEstimate = CalculateEstimate(data.Segments);
+            TimeSpan? liveEstimate = CalculateEstimate(data.Segments, data.PendingMinutes);
             return liveEstimate ?? data.CachedEstimated;
         }
 
-        private static TimeSpan? CalculateEstimate(List<DrainSegment> segments)
+        private static TimeSpan? CalculateEstimate(List<DrainSegment> segments, double pendingMinutes)
         {
             if (segments.Count < MinAmountOfSegmentsNeeded) return null;
 
             double totalPercent = segments.Sum(s => s.PercentDrained);
-            double totalMinutes = segments.Sum(s => s.MinutesElapsed);
+            double totalMinutes = segments.Sum(s => s.MinutesElapsed) + pendingMinutes;
 
             if (totalPercent < MinAmountOfPercentage || totalMinutes < MinAmountOfTimeNeeded) return null;
 

@@ -35,7 +35,7 @@ The app acts **only when needed**, showing a overlay with controller status **on
 * **Invisible when not needed:** If no controller is low on battery, the widget remains hidden.
 * **Button to view the battery levels:** If any controllers has the PS button down (for ~1-1.5 sec), the overlay will show for a couple of seconds.
 * **Settings menu:** customize your user experience with just some clicks.
-* **Battery Stats:** see how long your PS% controller battery lasts
+* **Battery Stats:** see how long your PS5 controller battery lasts
 * **Tested with firmware A-0630** (latest as of December 5, 2025).
 * **Framework-dependent and self-contained releases available.**
 * **Built using .NET 8.0.**

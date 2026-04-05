@@ -1,9 +1,12 @@
 ﻿using Microsoft.Win32;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace DualSenseBatteryMonitor
 {
@@ -44,9 +47,14 @@ namespace DualSenseBatteryMonitor
         //battery drain stats
         public static int batteryDrainStatsErrorCode = -1;
 
-        // notifyiers
+        //notifyiers
         public static event Action? BatteryStatVisibilityChanged;
         public static event Action? BatteryStatFileDeleted;
+
+        //VersionUpdateCheck cache
+        private static Version? onlineLatestUpdate = null;
+        private static DateTime? onlineLatestUpdateCheckTime = default;
+        private const int hoursInBetweenOnlineChecks = 1;
 
         private NotifyIcon? tray;
         private SettingsWindow? settingsWindow;
@@ -72,6 +80,63 @@ namespace DualSenseBatteryMonitor
                 }
             }
         }
+
+        public static async Task<Version?> GetLatestVersionAsync()
+        {
+#if DEBUG
+            return null; //don't send requests when in debug
+#else
+            if (onlineLatestUpdate == null)
+            {
+                return await checkOnlineForUpdate();
+            }
+            else //version was cached
+            {
+                if (onlineLatestUpdateCheckTime == default || DateTime.UtcNow - onlineLatestUpdateCheckTime >= TimeSpan.FromHours(hoursInBetweenOnlineChecks))
+                {
+                    return await checkOnlineForUpdate();
+                }
+                else
+                {
+                    return onlineLatestUpdate;
+                }
+            }
+#endif
+        }
+
+        private static async Task<Version?> checkOnlineForUpdate()
+        {
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("DualSenseBatteryMonitorApplication");
+
+            var url = "https://api.github.com/repos/PixelIndieDev/DualSenseBatteryMonitor/releases/latest";
+            string? response = await client.GetStringAsync(url);
+
+            if (response != null)
+            {
+                using var doc = JsonDocument.Parse(response);
+                if (doc != null)
+                {
+                    var root = doc.RootElement;
+                    if (doc != null)
+                    {
+                        string tag = root.GetProperty("tag_name").GetString();
+
+                        if (string.IsNullOrWhiteSpace(tag)) return null;
+
+                        tag = tag.TrimStart('v', 'V');
+                        if (Version.TryParse(tag, out var version))
+                        {
+                            onlineLatestUpdateCheckTime = DateTime.Now;
+                            return version;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
         protected override void OnStartup(StartupEventArgs e)
         {
             bool createdNew;
@@ -272,5 +337,4 @@ namespace DualSenseBatteryMonitor
             }
         }
     }
-
 }

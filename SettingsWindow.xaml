@@ -22,7 +22,7 @@
         <StackPanel Grid.Row="1">
             <CheckBox x:Name="RunOnStartupCheckBox" Content="Run on startup" FontSize="18" Foreground="White" Checked="RunOnStartupCheckBox_Changed" Unchecked="RunOnStartupCheckBox_Changed" Margin="0,10,0,0"/>
             <TextBlock Text="Automatically launch the battery monitor when Windows starts" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>
-            
+
             <CheckBox x:Name="ShowLowBatteryCheckBox" Content="Show low battery warning continuously" FontSize="18" Foreground="White" Checked="ShowLowBatteryCheckBox_Changed" Unchecked="ShowLowBatteryCheckBox_Changed" Margin="0,10,0,0"/>
             <TextBlock Text="Keep the low battery warning visible until the controller is charged or the battery level is no longer low" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>
 
@@ -42,8 +42,25 @@
             <TextBlock Text="Save error details to a log file when an error/exception occurs" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>
         </StackPanel>
         <StackPanel Grid.Row="2" Orientation="Vertical" HorizontalAlignment="Center">
-            <TextBlock x:Name="VersionTextBlock" Text="Version 1.0.0" FontSize="12" Foreground="#FFB0B0B0" HorizontalAlignment="Center"/>
+            <Grid>
+                <TextBlock x:Name="VersionTextBlock" Text="Version 9.9.9" FontSize="12" Foreground="#FFB0B0B0" HorizontalAlignment="Center"/>
+                <Image x:Name="icon_NewUpdateAvaiable" Height="15" Width="15" Stretch="UniformToFill" Source="{StaticResource NewUpdateIconDrawingImage}" Panel.ZIndex="2" Cursor="Help" ToolTip="New version available" HorizontalAlignment="Right" RenderTransformOrigin="0.5,0.5" Visibility="Collapsed">
+                    <Image.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform Y="-5" X="6"/>
+                        </TransformGroup>
+                    </Image.RenderTransform>
+                </Image>
+            </Grid>
             <TextBlock Text="by PixelIndieDev" FontSize="11" Foreground="#FFB0B0B0" HorizontalAlignment="Center"/>
+            <TextBlock FontSize="11" Foreground="#FFB0B0B0" HorizontalAlignment="Center" Cursor="Hand">
+                <Hyperlink NavigateUri="https://github.com/PixelIndieDev/DualSenseBatteryMonitor" RequestNavigate="Hyperlink_RequestNavigate" Foreground="#FFDEDEDE">
+                    Visit Github Page
+                </Hyperlink>
+            </TextBlock>
         </StackPanel>
     </Grid>
 </Window>

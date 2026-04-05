@@ -1,5 +1,7 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using System.Windows;
+using System.Windows.Navigation;
 
 namespace DualSenseBatteryMonitor
 {
@@ -26,6 +28,18 @@ namespace DualSenseBatteryMonitor
             LoadVersion();
 
             UpdateBatteryStatsCheckboxesEnabled();
+
+            checkVersions();
+        }
+
+        private async Task checkVersions()
+        {
+            Version? latestVersion = await App.GetLatestVersionAsync();
+            Version? currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
+
+            if (latestVersion == null || currentVersion == null) return;
+
+            icon_NewUpdateAvaiable.Visibility = (latestVersion > currentVersion) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void LoadSettings()
@@ -103,6 +117,15 @@ namespace DualSenseBatteryMonitor
             // Also dim the description TextBlocks beneath them :)
             TextBlock_ShowBatteryTimeLeftDesc.Opacity = opacity;
             TextBlock_ShowBatteryFullDrainDesc.Opacity = opacity;
+        }
+
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = e.Uri.AbsoluteUri,
+                UseShellExecute = true
+            });
         }
     }
 }

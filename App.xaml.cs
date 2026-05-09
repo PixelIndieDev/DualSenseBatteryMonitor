@@ -6,7 +6,6 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace DualSenseBatteryMonitor
 {
@@ -165,14 +164,11 @@ namespace DualSenseBatteryMonitor
             tray.Visible = true;
 
             var trayMenu = new System.Windows.Forms.ContextMenuStrip();
-
             var settingsItem = new ToolStripMenuItem("Settings");
             settingsItem.Click += (s, e) => OpenSettingsWindow();
             trayMenu.Items.Add(settingsItem);
             trayMenu.Items.Add(new ToolStripSeparator());
-
             trayMenu.Items.Add(new ToolStripMenuItem("Exit", null, (s, e) => Shutdown()));
-
             tray.ContextMenuStrip = trayMenu;
 
             SyncStartupRegistryWithSetting();

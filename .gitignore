@@ -1,0 +1,9 @@
+obj/
+bin/
+Properties/
+.vs/
+*.slnx
+*.sln
+Illustrator files/
+*.txt
+*.tmp

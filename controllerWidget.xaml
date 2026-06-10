@@ -12,6 +12,8 @@
         <Storyboard x:Key="BlinkStoryboard" RepeatBehavior="Forever" AutoReverse="True" Timeline.DesiredFrameRate="30">
             <DoubleAnimation Storyboard.TargetName="icon_battery" Storyboard.TargetProperty="Opacity" From="1" To="0.3" Duration="0:0:0.3" AutoReverse="True" RepeatBehavior="Forever"/>
             <DoubleAnimation Storyboard.TargetName="progressbar_battery" Storyboard.TargetProperty="Opacity" From="1" To="0.3" Duration="0:0:0.3" AutoReverse="True" RepeatBehavior="Forever"/>
+            <DoubleAnimation Storyboard.TargetName="text_battery_level_alt" Storyboard.TargetProperty="Opacity" From="1" To="0.3" Duration="0:0:0.3" AutoReverse="True" RepeatBehavior="Forever"/>
+            <DoubleAnimation Storyboard.TargetName="text_battery_level_altPerc" Storyboard.TargetProperty="Opacity" From="1" To="0.3" Duration="0:0:0.3" AutoReverse="True" RepeatBehavior="Forever"/>
         </Storyboard>
     </Page.Resources>
 
@@ -26,7 +28,7 @@
         <TextBlock x:Name="text_drainstat_error" Text="ERROR 1200" FontSize="16" Opacity="0.6" VerticalAlignment="Top" Margin="147,7,0,0" HorizontalAlignment="Left" TextAlignment="Center" FontFamily="Artifakt Element Black" Foreground="White" Visibility="Collapsed"/>
         <TextBlock x:Name="text_drainstat_Deco02" Text="left" FontSize="14" Opacity="0.6" VerticalAlignment="Top" Margin="185,103,0,0" HorizontalAlignment="Left" TextAlignment="Center" FontFamily="Artifakt Element Black" Foreground="White"/>
         <!-- Charging bolt icon (visible only when charging) -->
-        <Image x:Name="icon_charging" Height="30" Width="30" Stretch="UniformToFill" Source="{StaticResource chargingDrawingImage}" Margin="50,0,0,0" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Right" IsHitTestVisible="False" ClipToBounds="True" Panel.ZIndex="2">
+        <Image x:Name="icon_charging" Height="30" Width="30" Stretch="UniformToFill" Source="{StaticResource chargingDrawingImage}" Margin="50,0,0,0" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Right" IsHitTestVisible="False" ClipToBounds="True" Panel.ZIndex="2" Visibility="Collapsed">
             <Image.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -36,6 +38,21 @@
                 </TransformGroup>
             </Image.RenderTransform>
         </Image>
+        <!-- Alt battery info -->
+        <Image x:Name="icon_charging_alt" Height="30" Width="30" Stretch="UniformToFill" Source="{StaticResource chargingDrawingImage}" Margin="50,0,0,0" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Right" IsHitTestVisible="False" ClipToBounds="True" Panel.ZIndex="2">
+            <Image.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-90"/>
+                    <TranslateTransform X="-66" Y="0"/>
+                </TransformGroup>
+            </Image.RenderTransform>
+        </Image>
+        <TextBlock x:Name="text_battery_level_alt" Text="999" FontSize="16" Opacity="1" VerticalAlignment="Center" TextAlignment="Right" FontFamily="Artifakt Element Black" Foreground="White" RenderTransformOrigin="1,0.5" Margin="181,0,34,0">
+        </TextBlock>
+        <TextBlock x:Name="text_battery_level_altPerc" Text="%" FontSize="16" Opacity="1" VerticalAlignment="Center" TextAlignment="Right" FontFamily="Artifakt Element Black" Foreground="White" RenderTransformOrigin="1,0.5" Margin="216,0,17,0" Height="21">
+        </TextBlock>
         <!-- connection type icon -->
         <Image x:Name="icon_connectiontype" Height="20" Width="20" Stretch="UniformToFill" Source="{StaticResource connection_UnknownDrawingImage}" Margin="0,80,180,25" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Right" IsHitTestVisible="False" ClipToBounds="True" Panel.ZIndex="2"></Image>
         <!-- low batterylevel warning icon -->

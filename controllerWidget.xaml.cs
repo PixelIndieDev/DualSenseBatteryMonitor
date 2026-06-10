@@ -55,6 +55,8 @@ namespace DualSenseBatteryMonitor
         private const int lowBatteryThreshold = 15;
         private Storyboard blink_storyboard;
 
+        private bool showBatteryInPercentage = App.GetShowBatteryInPercentageSetting();
+
         // Constructor
         public controllerWidget(bool noControllers, int index, int batterylevel)
         {
@@ -73,6 +75,13 @@ namespace DualSenseBatteryMonitor
 
             App.BatteryStatVisibilityChanged += OnBatteryStatVisibilityChanged;
             App.BatteryStatFileDeleted += OnBatteryStatFileDeleted;
+
+            App.BatteryInPercentageChanged += BatteryInPercentageChanged;
+        }
+
+        private void BatteryInPercentageChanged()
+        {
+            showBatteryInPercentage = App.GetShowBatteryInPercentageSetting();
         }
 
         private void OnBatteryStatVisibilityChanged()
@@ -197,6 +206,10 @@ namespace DualSenseBatteryMonitor
                         progressbar_battery.Foreground = HueToGradient(batterylevel);
                         progressbar_battery.Value = batterylevel;
 
+                        text_battery_level_alt.Text = $"{batterylevel}";
+                        text_battery_level_alt.Visibility = showBatteryInPercentage ? Visibility.Visible : Visibility.Collapsed;
+                        text_battery_level_altPerc.Visibility = showBatteryInPercentage ? Visibility.Visible : Visibility.Collapsed;
+
                         //Set the charging icon when there is no error code
                         SetChargingIconActive(isCharging);
 
@@ -235,21 +248,9 @@ namespace DualSenseBatteryMonitor
 
             bool hasError = App.batteryDrainStatsErrorCode > App.batteryErrorCodeTrehsold;
             bool showStats = estimate != null && !hasError;
-            Visibility newVisError = hasError ? Visibility.Visible : Visibility.Collapsed;
 
-            if (hasError)
-            {
-                Visibility otherVis = newVisError == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
-                if (text_drainstat_error.Visibility != newVisError)
-                {
-                    text_drainstat_error.Visibility = newVisError;
-
-                    text_drainstat_average.Visibility = otherVis;
-                    text_drainstat_left.Visibility = otherVis;
-                    text_drainstat_Deco02.Visibility = otherVis;
-                }
-                return;
-            }
+            ChangeStatsErrorAndStatsVisibility(hasError);
+            if (hasError) return;
 
             Visibility newVisTimeLeft = App.GetShowBatteryStatsTimeLeftSetting() ? Visibility.Visible : Visibility.Collapsed;
             Visibility newVisTimeEstimate = App.GetShowBatteryStatsTimeEstimateSetting() ? Visibility.Visible : Visibility.Collapsed;
@@ -272,6 +273,20 @@ namespace DualSenseBatteryMonitor
             {
                 text_drainstat_left.Visibility = newVisTimeLeft;
                 text_drainstat_Deco02.Visibility = newVisTimeLeft;
+            }
+        }
+
+        private void ChangeStatsErrorAndStatsVisibility(bool hasError)
+        {
+            Visibility newVisError = hasError ? Visibility.Visible : Visibility.Collapsed;
+            Visibility otherVis = newVisError == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible; // do opposite for stats
+            if (text_drainstat_error.Visibility != newVisError)
+            {
+                text_drainstat_error.Visibility = newVisError;
+
+                text_drainstat_average.Visibility = otherVis;
+                text_drainstat_left.Visibility = otherVis;
+                text_drainstat_Deco02.Visibility = otherVis;
             }
         }
 
@@ -381,15 +396,20 @@ namespace DualSenseBatteryMonitor
 
         private void SetChargingIconActive(bool charging)
         {
-            if (charging)
+            if (showBatteryInPercentage)
             {
-                icon_charging.Visibility = Visibility.Visible;
-            }
+                icon_charging_alt.Visibility = charging ? Visibility.Visible : Visibility.Collapsed;
+
+                // make normal not visible
+                icon_charging.Visibility = Visibility.Collapsed;
+            } 
             else
             {
-                icon_charging.Visibility = Visibility.Collapsed;
-            }
+                // make percentage not visible
+                icon_charging_alt.Visibility = Visibility.Collapsed;
 
+                icon_charging.Visibility = charging ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         private void SetConnectionTypeIcon(ConnectionTypeEnum connectionType)

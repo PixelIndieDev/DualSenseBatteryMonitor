@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DualSenseBatteryMonitor"
         mc:Ignorable="d"
-        Title="DualSense Battery Monitor Settings" Height="650" Width="400" WindowStartupLocation="CenterScreen" Foreground="White" WindowStyle="SingleBorderWindow" SnapsToDevicePixels="True" Topmost="False" Focusable="True" IsHitTestVisible="True" ResizeMode="NoResize" ShowInTaskbar="True" Icon="/icons/window/BatteryMonitor.ico" ShowActivated="True">
+        Title="DualSense Battery Monitor Settings" Height="700" Width="400" WindowStartupLocation="CenterScreen" Foreground="White" WindowStyle="SingleBorderWindow" SnapsToDevicePixels="True" Topmost="False" Focusable="True" IsHitTestVisible="True" ResizeMode="NoResize" ShowInTaskbar="True" Icon="/icons/window/BatteryMonitor.ico" ShowActivated="True">
     <Window.Background>
         <LinearGradientBrush x:Name="gradient_background" EndPoint="0,0" StartPoint="1,1" SpreadMethod="Pad">
             <GradientStop Color="#FF00439C" Offset="0"/>
@@ -25,6 +25,9 @@
 
             <CheckBox x:Name="ShowLowBatteryCheckBox" Content="Show low battery warning continuously" FontSize="18" Foreground="White" Checked="ShowLowBatteryCheckBox_Changed" Unchecked="ShowLowBatteryCheckBox_Changed" Margin="0,10,0,0"/>
             <TextBlock Text="Keep the low battery warning visible until the controller is charged or the battery level is no longer low" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>
+
+            <CheckBox x:Name="ShowBatteryInPercentageCheckBox" Content="Show battery level as a percentage" FontSize="18" Foreground="White" Checked="ShowBatteryInPercentageCheckBox_Changed" Unchecked="ShowBatteryInPercentageCheckBox_Changed" Margin="0,10,0,0"/>
+            <TextBlock x:Name="TextBlock_BatteryInPercentageDesc" Text="Shows the numerical percentage value on top of the battery icon" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>
 
             <CheckBox x:Name="ShowBatteryTimeLeftCheckBox" Content="Show battery time remaining" FontSize="18" Foreground="White" Checked="ShowBatteryTimeLeftCheckBox_Changed" Unchecked="ShowBatteryTimeLeftCheckBox_Changed" Margin="0,10,0,0"/>
             <TextBlock x:Name="TextBlock_ShowBatteryTimeLeftDesc" Text="Shows an estimate of how much battery time is left based on previously known drain rate" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>

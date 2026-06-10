@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Interop;
@@ -39,6 +40,7 @@ namespace DualSenseBatteryMonitor
         private const string ShowBatteryStatsTimeLeftName = "ShowBatteryStatsTimeLeft";
         private const string ShowBatteryStatsTimeEstimateName = "ShowBatteryStatsTimeEstimate";
         private const string DontSaveBatteryStatsName = "DontSaveBatteryStats";
+        private const string ShowBatteryInPercentageName = "ShowBatteryInPercentage";
 
         //threshold
         public static readonly int batteryErrorCodeTrehsold = 500;
@@ -49,11 +51,13 @@ namespace DualSenseBatteryMonitor
         //notifyiers
         public static event Action? BatteryStatVisibilityChanged;
         public static event Action? BatteryStatFileDeleted;
+        public static event Action? BatteryInPercentageChanged;
 
         //VersionUpdateCheck cache
         private static Version? onlineLatestUpdate = null;
         private static DateTime? onlineLatestUpdateCheckTime = default;
-        private const int hoursInBetweenOnlineChecks = 1;
+        private const int hoursInBetweenOnlineChecks = 2;
+        public static bool userCanUpdate = false;
 
         private NotifyIcon? tray;
         private SettingsWindow? settingsWindow;
@@ -78,6 +82,16 @@ namespace DualSenseBatteryMonitor
 
                 }
             }
+        }
+
+        public static async Task checkVersions()
+        {
+            Version? latestVersion = await App.GetLatestVersionAsync();
+            Version? currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
+
+            if (latestVersion == null || currentVersion == null) return;
+
+            userCanUpdate = (latestVersion > currentVersion);
         }
 
         public static async Task<Version?> GetLatestVersionAsync()
@@ -172,6 +186,13 @@ namespace DualSenseBatteryMonitor
             tray.ContextMenuStrip = trayMenu;
 
             SyncStartupRegistryWithSetting();
+
+            checkVersions();
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            base.OnExit(e);
         }
 
         private void OpenSettingsWindow()
@@ -331,6 +352,20 @@ namespace DualSenseBatteryMonitor
             {
                 BatteryStatFileDeleted?.Invoke();
             }
+        }
+
+        public static bool GetShowBatteryInPercentageSetting()
+        {
+            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            int value = (int)key.GetValue(ShowBatteryInPercentageName, 0);
+            return value == 1;
+        }
+        public static void SetShowBatteryInPercentageSetting(bool enable)
+        {
+            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            key.SetValue(ShowBatteryInPercentageName, enable ? 1 : 0, RegistryValueKind.DWord);
+
+            BatteryInPercentageChanged?.Invoke();
         }
     }
 }

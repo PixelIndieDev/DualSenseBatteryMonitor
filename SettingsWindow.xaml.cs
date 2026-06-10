@@ -34,12 +34,8 @@ namespace DualSenseBatteryMonitor
 
         private async Task checkVersions()
         {
-            Version? latestVersion = await App.GetLatestVersionAsync();
-            Version? currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
-
-            if (latestVersion == null || currentVersion == null) return;
-
-            icon_NewUpdateAvaiable.Visibility = (latestVersion > currentVersion) ? Visibility.Visible : Visibility.Collapsed;
+            await App.checkVersions();
+            icon_NewUpdateAvaiable.Visibility = App.userCanUpdate ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void LoadSettings()
@@ -53,6 +49,8 @@ namespace DualSenseBatteryMonitor
             ShowErrorCheckBox.IsChecked = App.GetErrorShowStyleSetting();
             DontSaveBatteryStatsCheckBox.IsChecked = App.GetDontSaveBatteryStatsSetting();
             WriteExceptionsCheckBox.IsChecked = App.GetWriteExceptionsInLogFileSetting();
+
+            ShowBatteryInPercentageCheckBox.IsChecked = App.GetShowBatteryInPercentageSetting();
         }
 
         private void LoadVersion()
@@ -126,6 +124,11 @@ namespace DualSenseBatteryMonitor
                 FileName = e.Uri.AbsoluteUri,
                 UseShellExecute = true
             });
+        }
+
+        private void ShowBatteryInPercentageCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            App.SetShowBatteryInPercentageSetting(ShowBatteryInPercentageCheckBox.IsChecked == true);
         }
     }
 }

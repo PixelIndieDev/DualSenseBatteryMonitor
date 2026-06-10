@@ -15,7 +15,7 @@
     <ErrorReport>none</ErrorReport>
 	<Optimize>True</Optimize>
 	<Authors>PixelIndieDev</Authors>
-    <VersionPrefix>5.2.0</VersionPrefix>
+    <VersionPrefix>5.3.0</VersionPrefix>
 	<ProduceReferenceAssembly>False</ProduceReferenceAssembly>
 	<Copyright>Copyright (c) 2025 PixelIndieDev (MIT License)</Copyright>
 	<Title>DualSense Battery Monitor</Title>
@@ -26,6 +26,7 @@
 	<RepositoryUrl>https://github.com/PixelIndieDev/DualSenseBatteryMonitor</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
 	<PackageTags>DualSense; DualSense Edge; PS5 controller; controller; battery; battery monitor; PS5 Edge controller; windows tool; couch gaming; playstation controller; playstation 5 controller</PackageTags>
+	<NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

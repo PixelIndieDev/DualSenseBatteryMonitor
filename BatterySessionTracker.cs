@@ -52,6 +52,8 @@ namespace DualSenseBatteryMonitor
 
         private static Dictionary<string, DeviceDrainData> drainData = new();
 
+        private static bool pendingSaveRetry = false;
+
         //active in memory only
         private class ActiveState
         {
@@ -75,6 +77,13 @@ namespace DualSenseBatteryMonitor
 
             // dont read when errored out
             if (batteryPercent >= App.batteryErrorCodeTrehsold) return;
+
+            // if a previous save failed, retry it now so error code 1200 clears if the issue resolved :)
+            if (pendingSaveRetry)
+            {
+                pendingSaveRetry = false;
+                SaveData();
+            }
 
             bool hasState = activeDrainDataStates.TryGetValue(devicePath, out var state);
             if (!hasState)
@@ -233,6 +242,7 @@ namespace DualSenseBatteryMonitor
             {
                 //something went wrong
                 App.batteryDrainStatsErrorCode = 1200;
+                pendingSaveRetry = true; // retry on the next RecordReading tick
                 App.WriteLog("BatterySessionTracker | SaveData() | Exception - " + e);
             }
         }

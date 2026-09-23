@@ -77,7 +77,7 @@ namespace DualSenseBatteryMonitor.components.helpers
             // dont read when errored out
             if (batteryPercent >= App.batteryErrorCodeTrehsold) return;
 
-            // if a previous save failed, retry it now so error code 1200 clears if the issue resolved :)
+            // if a previous save failed, retry it now so error code 1200 clears if the issue resolved
             if (pendingSaveRetry)
             {
                 pendingSaveRetry = false;

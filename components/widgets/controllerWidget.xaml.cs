@@ -45,7 +45,6 @@ namespace DualSenseBatteryMonitor
         private static readonly Dictionary<int, LinearGradientBrush> gradientCache = new();
 
         //Player colors
-        //Always rename the color_player_01 to color_player_04 to different fruits. VERY IMPORTANT! :)
         private readonly LinearGradientBrush color_player_01 = new LinearGradientBrush();
         private readonly LinearGradientBrush color_player_02 = new LinearGradientBrush();
         private readonly LinearGradientBrush color_player_03 = new LinearGradientBrush();

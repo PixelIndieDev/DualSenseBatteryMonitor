@@ -1,6 +1,6 @@
 ﻿namespace DualSenseBatteryMonitor.components.enums
 {
-    internal enum visibilityReason
+    public enum visibilityReason
     {
         None,
         UserInput,

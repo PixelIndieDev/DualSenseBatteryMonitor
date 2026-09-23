@@ -1,6 +1,6 @@
 ﻿namespace DualSenseBatteryMonitor.components.enums
 {
-    internal enum ConnectionTypeEnum
+    public enum ConnectionTypeEnum
     {
         Unknown,
         USB,

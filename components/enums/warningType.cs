@@ -1,6 +1,6 @@
 ﻿namespace DualSenseBatteryMonitor.components.enums
 {
-    internal enum warningType
+    public enum warningType
     {
         LowBattery,
         Error,

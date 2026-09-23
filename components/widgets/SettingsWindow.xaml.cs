@@ -31,10 +31,10 @@ namespace DualSenseBatteryMonitor
 
             UpdateBatteryStatsCheckboxesEnabled();
 
-            checkVersions();
+            CheckVersions();
         }
 
-        private async Task checkVersions()
+        private async Task CheckVersions()
         {
             await App.checkVersions();
             icon_NewUpdateAvaiable.Visibility = App.userCanUpdate ? Visibility.Visible : Visibility.Collapsed;

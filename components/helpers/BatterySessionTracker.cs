@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 
 namespace DualSenseBatteryMonitor.components.helpers
@@ -85,7 +84,7 @@ namespace DualSenseBatteryMonitor.components.helpers
                 SaveData();
             }
 
-            bool hasState = activeDrainDataStates.TryGetValue(devicePath, out var state);
+            bool hasState = activeDrainDataStates.TryGetValue(devicePath, out ActiveState? state);
             if (!hasState)
             {
                 // save baseline
@@ -95,7 +94,7 @@ namespace DualSenseBatteryMonitor.components.helpers
                     LastReadingTime = DateTime.Now,
                 };
 
-                if (drainData.TryGetValue(devicePath, out var existingData) && existingData.Segments.Any() && existingData.Segments.Last().BatteryLevel < (byte)batteryPercent)
+                if (drainData.TryGetValue(devicePath, out DeviceDrainData? existingData) && existingData.Segments.Any() && existingData.Segments.Last().BatteryLevel < (byte)batteryPercent)
                 {
                     ClearOlderSessions(devicePath, existingData);
                 }
@@ -140,7 +139,7 @@ namespace DualSenseBatteryMonitor.components.helpers
             } else if (dropped > 0 && minutesPassed >= MinAmountOfTime) // Only track if battery actually dropped and some time has passed
                                                                         // avoids noise from the 0-8 step scale
             {
-                var segment = new DrainSegment
+                DrainSegment segment = new DrainSegment
                 {
                     PercentDrained = dropped,
                     MinutesElapsed = minutesPassed,
@@ -190,7 +189,7 @@ namespace DualSenseBatteryMonitor.components.helpers
         {
             if (App.GetDontSaveBatteryStatsSetting()) return null;
 
-            if (!drainData.TryGetValue(devicePath, out var data)) return null;
+            if (!drainData.TryGetValue(devicePath, out DeviceDrainData? data)) return null;
 
             TimeSpan? liveEstimate = CalculateEstimate(data.Segments, data.PendingMinutes);
             return liveEstimate ?? data.CachedEstimated;

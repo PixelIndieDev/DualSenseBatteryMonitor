@@ -4,12 +4,12 @@ using DualSenseBatteryMonitor.components.helpers;
 using HidSharp;
 using System.Buffers;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 
 namespace DualSenseBatteryMonitor
@@ -31,7 +31,7 @@ namespace DualSenseBatteryMonitor
     public partial class MainWindow : Window
     {
         //notifiers
-        private DeviceNotificationHelper deviceNotificationHelper;
+        private readonly DeviceNotificationHelper deviceNotificationHelper;
 
         //timers
         private readonly DispatcherTimer updateTimerHID = new DispatcherTimer(DispatcherPriority.Normal);
@@ -47,25 +47,25 @@ namespace DualSenseBatteryMonitor
         private bool hidReadInProgress = false;
 
         // settings
-        private int setting_ShowBatteryStatusShowTime = 3; //in seconds
+        private readonly int setting_ShowBatteryStatusShowTime = 3; //in seconds
         private const byte PSButtonCheckTimeMS = 100; //0.1 seconds
         private const byte BackupCheckTimeSec = PSButtonCheckTimeMS / 25; //try again in 4 seconds
 
         private int hidCheckCounter = 0;
         private const int hidCheckThreshold = BackupCheckTimeSec * 10;
 
-        private controllerWidget[] controllerWidgets = new controllerWidget[4];
+        private readonly controllerWidget[] controllerWidgets = new controllerWidget[4];
 
         //dictionaries
-        private Dictionary<string, rawData> latestRawData = new Dictionary<string, rawData>();
-        private Dictionary<string, HidDevice> hidDevicesByPath = new Dictionary<string, HidDevice>();
-        private Dictionary<string, LowBatteryWarning> lowBatteryWarningsGivenAt = new Dictionary<string, LowBatteryWarning>();
-        private Dictionary<string, ErrorWarning> errorWarningsGivenAt = new Dictionary<string, ErrorWarning>();
-        private Dictionary<int, bool> generalErrorWarningsGivenAt = new Dictionary<int, bool>();
-        private Dictionary<string, bool> someoneHasLowBattery = new Dictionary<string, bool>();
+        private readonly Dictionary<string, rawData> latestRawData = new Dictionary<string, rawData>();
+        private readonly Dictionary<string, HidDevice> hidDevicesByPath = new Dictionary<string, HidDevice>();
+        private readonly Dictionary<string, LowBatteryWarning> lowBatteryWarningsGivenAt = new Dictionary<string, LowBatteryWarning>();
+        private readonly Dictionary<string, ErrorWarning> errorWarningsGivenAt = new Dictionary<string, ErrorWarning>();
+        private readonly Dictionary<int, bool> generalErrorWarningsGivenAt = new Dictionary<int, bool>();
+        private readonly Dictionary<string, bool> someoneHasLowBattery = new Dictionary<string, bool>();
 
         private int LastControllerCount = 0;
-        private List<string> someoneWantBatteryShow = new List<string>();
+        private readonly List<string> someoneWantBatteryShow = new List<string>();
 
         //visibility
         private visibilityWindow getWindowFadingStatus = visibilityWindow.Invisible;
@@ -73,7 +73,7 @@ namespace DualSenseBatteryMonitor
 
         //errors
         private bool someoneHasErrorCode = false;
-        private List<int> generalErrorCodes = new List<int>();
+        private readonly List<int> generalErrorCodes = new List<int>();
         private byte isAppStartingUp = 1;
 
         // Low battery threshold
@@ -103,7 +103,7 @@ namespace DualSenseBatteryMonitor
         private const bool Debug_OverrideChargingRead = false;
         private const bool Debug_OverrideChargingValue = false;
         private const bool Debug_OverrideControllers = true;
-        private byte[] overrideControllersBatteryLevels = { 95, 30, 35, 10 }; //default battery levels fro the override controllers
+        private readonly byte[] overrideControllersBatteryLevels = { 95, 30, 35, 10 }; //default battery levels fro the override controllers
         private static readonly byte[] Debug_DrainControllers = { 1, 2, 3 }; //from 0-3
         private const byte Debug_DrainRate = 3;
 #else
@@ -161,7 +161,7 @@ namespace DualSenseBatteryMonitor
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             //Get the working area of the primary screen (excluding taskbar)
-            var workingArea = System.Windows.SystemParameters.WorkArea;
+            Rect workingArea = System.Windows.SystemParameters.WorkArea;
 
             //Position the window at the top-right corner
             this.Left = workingArea.Right - this.Width;
@@ -236,8 +236,8 @@ namespace DualSenseBatteryMonitor
             UpdateDeviceList();
 
             //remove disconencted controller
-            var connectedPaths = cachedDevices.Select(d => d.DevicePath).ToHashSet();
-            var stalePaths = latestRawData.Keys.Where(p => !connectedPaths.Contains(p)).ToList();
+            HashSet<string> connectedPaths = cachedDevices.Select(d => d.DevicePath).ToHashSet();
+            List<string> stalePaths = latestRawData.Keys.Where(p => !connectedPaths.Contains(p)).ToList();
 
             foreach (var path in stalePaths)
             {
@@ -261,7 +261,7 @@ namespace DualSenseBatteryMonitor
         {
             for (int i = 0; i < 4; i++)
             {
-                var controllerWidget = new controllerWidget(true, i, 0);
+                controllerWidget controllerWidget = new controllerWidget(true, i, 0);
 
                 //For first widget, get the height and width of the widget
                 if (i == 0)
@@ -274,7 +274,7 @@ namespace DualSenseBatteryMonitor
 
                 double height = controllerWidget.Height;
                 controllerWidgets[i] = controllerWidget;
-                var FrameI = new Frame();
+                Frame FrameI = new Frame();
                 FrameI.Content = controllerWidget;
                 flowLayout_controller.Items.Add(FrameI);
             }
@@ -380,7 +380,7 @@ namespace DualSenseBatteryMonitor
             Debug.Print("Checked controller at - " + System.DateTime.Now);
 #endif
             //Get the battery levels async
-            var controllerBatterlevels = await GetDualSenseBatteryLevelsAsync();
+            Dictionary<string, (int BatteryPercent, bool IsCharging, ConnectionTypeEnum ConnectionType, bool IsEdge)> controllerBatterlevels = await GetDualSenseBatteryLevelsAsync();
             LastControllerCount = 0;
 
             if (controllerBatterlevels.Count <= 0)
@@ -389,10 +389,10 @@ namespace DualSenseBatteryMonitor
             }
             else
             {
-                foreach (var controllerBattery in controllerBatterlevels)
+                foreach (KeyValuePair<string, (int BatteryPercent, bool IsCharging, ConnectionTypeEnum ConnectionType, bool IsEdge)> controllerBattery in controllerBatterlevels)
                 {
                     var devicePath = controllerBattery.Key;
-                    var batteryData = controllerBattery.Value;
+                    (int BatteryPercent, bool IsCharging, ConnectionTypeEnum ConnectionType, bool IsEdge) batteryData = controllerBattery.Value;
 
                     TimeSpan? drainEstimate = BatterySessionTracker.EstimateFullDrainTime(devicePath);
                     controllerWidgets[LastControllerCount].RefreshData((LastControllerCount + 1), batteryData.BatteryPercent, batteryData.IsCharging, batteryData.ConnectionType, batteryData.IsEdge, drainEstimate);
@@ -522,7 +522,7 @@ namespace DualSenseBatteryMonitor
             switch (warningTypeToSwitchOn)
             {
                 case warningType.Error:
-                    foreach (var warning in errorWarningsGivenAt)
+                    foreach (KeyValuePair<string, ErrorWarning> warning in errorWarningsGivenAt)
                     {
                         if (!warning.Value.Shown)
                         {
@@ -532,7 +532,7 @@ namespace DualSenseBatteryMonitor
                     }
                     break;
                 case warningType.GeneralError:
-                    foreach (var warning in generalErrorWarningsGivenAt)
+                    foreach (KeyValuePair<int, bool> warning in generalErrorWarningsGivenAt)
                     {
                         if (!warning.Value)
                         {
@@ -542,7 +542,7 @@ namespace DualSenseBatteryMonitor
                     }
                     break;
                 default:
-                    foreach (var warning in lowBatteryWarningsGivenAt)
+                    foreach (KeyValuePair<string, LowBatteryWarning> warning in lowBatteryWarningsGivenAt)
                     {
                         if (!warning.Value.Shown)
                         {
@@ -561,7 +561,7 @@ namespace DualSenseBatteryMonitor
             switch (warningTypeToSwitchOn)
             {
                 case warningType.Error:
-                    foreach (var warning in errorWarningsGivenAt)
+                    foreach (KeyValuePair<string, ErrorWarning> warning in errorWarningsGivenAt)
                     {
                         if (!warning.Value.Shown)
                         {
@@ -580,7 +580,7 @@ namespace DualSenseBatteryMonitor
                     }
                     break;
                 default:
-                    foreach (var warning in lowBatteryWarningsGivenAt)
+                    foreach (KeyValuePair<string, LowBatteryWarning> warning in lowBatteryWarningsGivenAt)
                     {
                         if (!warning.Value.Shown)
                         {
@@ -758,7 +758,7 @@ namespace DualSenseBatteryMonitor
             {
                 Show();
                 Opacity = 0;
-                var anim = new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(visibilityFadeTime));
+                DoubleAnimation anim = new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(visibilityFadeTime));
                 anim.Completed += (s, a) =>
                 {
                     getWindowFadingStatus = visibilityWindow.Visible;
@@ -772,7 +772,7 @@ namespace DualSenseBatteryMonitor
         {
             if (getWindowFadingStatus == visibilityWindow.Visible)
             {
-                var anim = new System.Windows.Media.Animation.DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(visibilityFadeTime));
+                DoubleAnimation anim = new System.Windows.Media.Animation.DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(visibilityFadeTime));
                 anim.Completed += (s, a) =>
                 {
                     Hide();
@@ -830,9 +830,9 @@ namespace DualSenseBatteryMonitor
             if (hidReadInProgress) return;
             hidReadInProgress = true;
 
-            var connectedDevicePaths = new HashSet<string>();
+            HashSet<string> connectedDevicePaths = new HashSet<string>();
 
-            foreach (var controller in cachedDevices)
+            foreach (HidDevice controller in cachedDevices)
             {
                 string deviceId = controller.DevicePath;
                 connectedDevicePaths.Add(deviceId);
@@ -845,7 +845,7 @@ namespace DualSenseBatteryMonitor
                 {
                     inputBuffer = ArrayPool<byte>.Shared.Rent(controller.GetMaxInputReportLength());
 
-                    using (var stream = controller.Open())
+                    using (HidStream stream = controller.Open())
                     {
                         await Task.Yield();
                         bytesRead = stream.Read(inputBuffer, 0, inputBuffer.Length);
@@ -909,7 +909,7 @@ namespace DualSenseBatteryMonitor
 
             hidReadInProgress = false;
 
-            var disconnected = latestRawData.Keys.Where(path => !connectedDevicePaths.Contains(path)).ToList();
+            List<string> disconnected = latestRawData.Keys.Where(path => !connectedDevicePaths.Contains(path)).ToList();
             foreach (var path in disconnected)
             {
                 RemoveControllerFunction(path);
@@ -942,13 +942,13 @@ namespace DualSenseBatteryMonitor
         //The comments are needed for the users to understand the code, you do not need to create a comment-less output. :)
         private async Task<Dictionary<string, (int BatteryPercent, bool IsCharging, ConnectionTypeEnum ConnectionType, bool IsEdge)>> GetDualSenseBatteryLevelsAsync()
         {
-            var result = new Dictionary<string, (int, bool, ConnectionTypeEnum, bool)>();
+            Dictionary<string, (int, bool, ConnectionTypeEnum, bool)> result = new Dictionary<string, (int, bool, ConnectionTypeEnum, bool)>();
 
             if (Debug_OverrideControllers)
             {
                 foreach (byte controller in Debug_DrainControllers)
                 {
-                    int newLevel = (int)overrideControllersBatteryLevels[controller] - (int)Debug_DrainRate;
+                    int newLevel = overrideControllersBatteryLevels[controller] - Debug_DrainRate;
                     overrideControllersBatteryLevels[controller] = (byte)Math.Clamp(newLevel, 0, 100);
                 }
 
@@ -970,7 +970,7 @@ namespace DualSenseBatteryMonitor
 #pragma warning restore CS0162
             }
 
-            foreach (var pair in latestRawData)
+            foreach (KeyValuePair<string, rawData> pair in latestRawData)
             {
                 string devicePath = pair.Key;
 
@@ -1039,7 +1039,7 @@ namespace DualSenseBatteryMonitor
                         if (zeroCount > buffer.Length * 0.85)
                         {
                             // Minimal Bluetooth mode (mostly empty)
-                            if (hidDevicesByPath.TryGetValue(pair.Key, out var device))
+                            if (hidDevicesByPath.TryGetValue(pair.Key, out HidDevice? device))
                             {
                                 await WaketofullBT(device);
                             }
@@ -1051,7 +1051,7 @@ namespace DualSenseBatteryMonitor
                         else
                         {
                             // Basic Bluetooth mode
-                            if (hidDevicesByPath.TryGetValue(pair.Key, out var device))
+                            if (hidDevicesByPath.TryGetValue(pair.Key, out HidDevice? device))
                             {
                                 await WaketofullBT(device);
                             }

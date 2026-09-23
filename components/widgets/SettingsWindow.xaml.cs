@@ -56,7 +56,7 @@ namespace DualSenseBatteryMonitor
 
         private void LoadVersion()
         {
-            var version = Assembly.GetExecutingAssembly().GetName().Version;
+            Version? version = Assembly.GetExecutingAssembly().GetName().Version;
             VersionTextBlock.Text = $"Version {version?.Major}.{version?.Minor}.{version?.Build}";
         }
 

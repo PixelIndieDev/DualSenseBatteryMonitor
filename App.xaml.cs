@@ -54,7 +54,7 @@ namespace DualSenseBatteryMonitor
         public static event Action? BatteryInPercentageChanged;
 
         //VersionUpdateCheck cache
-        private static Version? onlineLatestUpdate = null;
+        private static readonly Version? onlineLatestUpdate = null;
         private static DateTime? onlineLatestUpdateCheckTime = default;
         private const int hoursInBetweenOnlineChecks = 2;
         public static bool userCanUpdate = false;
@@ -119,15 +119,15 @@ namespace DualSenseBatteryMonitor
 
         private static async Task<Version?> checkOnlineForUpdate()
         {
-            using var client = new HttpClient();
+            using HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.UserAgent.ParseAdd("DualSenseBatteryMonitorApplication");
 
-            var url = "https://api.github.com/repos/PixelIndieDev/DualSenseBatteryMonitor/releases/latest";
+            string url = "https://api.github.com/repos/PixelIndieDev/DualSenseBatteryMonitor/releases/latest";
             string? response = await client.GetStringAsync(url);
 
             if (response != null)
             {
-                using var doc = JsonDocument.Parse(response);
+                using JsonDocument doc = JsonDocument.Parse(response);
                 if (doc != null)
                 {
                     var root = doc.RootElement;
@@ -170,15 +170,15 @@ namespace DualSenseBatteryMonitor
             base.OnStartup(e);
 
             tray = new NotifyIcon();
-            var uri = new Uri("pack://application:,,,/icons/window/BatteryMonitor.ico");
+            Uri uri = new Uri("pack://application:,,,/icons/window/BatteryMonitor.ico");
             using (var stream = GetResourceStream(uri).Stream)
             {
                 tray.Icon = new Icon(stream);
             }
             tray.Visible = true;
 
-            var trayMenu = new System.Windows.Forms.ContextMenuStrip();
-            var settingsItem = new ToolStripMenuItem("Settings");
+            ContextMenuStrip trayMenu = new System.Windows.Forms.ContextMenuStrip();
+            ToolStripMenuItem settingsItem = new ToolStripMenuItem("Settings");
             settingsItem.Click += (s, e) => OpenSettingsWindow();
             trayMenu.Items.Add(settingsItem);
             trayMenu.Items.Add(new ToolStripSeparator());

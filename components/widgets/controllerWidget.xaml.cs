@@ -27,7 +27,7 @@ namespace DualSenseBatteryMonitor
     public partial class controllerWidget : Page
     {
         //Controller index (1-based)
-        private int self_index;
+        private readonly int self_index;
 
         //Opacity values for connected and disconnected states
         private const float enabled_opacity = 0.7f;
@@ -46,15 +46,15 @@ namespace DualSenseBatteryMonitor
 
         //Player colors
         //Always rename the color_player_01 to color_player_04 to different fruits. VERY IMPORTANT! :)
-        private LinearGradientBrush color_player_01 = new LinearGradientBrush();
-        private LinearGradientBrush color_player_02 = new LinearGradientBrush();
-        private LinearGradientBrush color_player_03 = new LinearGradientBrush();
-        private LinearGradientBrush color_player_04 = new LinearGradientBrush();
+        private readonly LinearGradientBrush color_player_01 = new LinearGradientBrush();
+        private readonly LinearGradientBrush color_player_02 = new LinearGradientBrush();
+        private readonly LinearGradientBrush color_player_03 = new LinearGradientBrush();
+        private readonly LinearGradientBrush color_player_04 = new LinearGradientBrush();
         private List<Brush>? playerColors;
 
         private bool isPlayingLowBatAnim = false;
         private const int lowBatteryThreshold = 15;
-        private Storyboard blink_storyboard;
+        private readonly Storyboard blink_storyboard;
 
         private bool showBatteryInPercentage = App.GetShowBatteryInPercentageSetting();
 
@@ -457,7 +457,7 @@ namespace DualSenseBatteryMonitor
             int key = (int)Math.Round(hue); //Reduce cache keys to avoid high memory usage
 
             //Try getting a gradient brush from the cache
-            if (!gradientCache.TryGetValue(key, out var brush))
+            if (!gradientCache.TryGetValue(key, out LinearGradientBrush? brush))
             {
                 //No gradient brush for the hue was found
                 //Create new gradient brush

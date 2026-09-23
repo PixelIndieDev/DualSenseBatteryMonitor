@@ -36,6 +36,7 @@ namespace DualSenseBatteryMonitor.components.helpers
         private static Dictionary<string, DeviceDrainData> drainData = new();
 
         private static bool pendingSaveRetry = false;
+        private static bool isDirty = false;
 
         //active in memory only
         private class ActiveState
@@ -44,6 +45,15 @@ namespace DualSenseBatteryMonitor.components.helpers
             public DateTime LastReadingTime { get; set; }
         }
         private static readonly Dictionary<string, ActiveState> activeDrainDataStates = new();
+
+        public static void FlushPendingChanges()
+        {
+            if (App.GetDontSaveBatteryStatsSetting()) return;
+            if (!isDirty && !pendingSaveRetry) return;
+
+            isDirty = false;
+            SaveData();
+        }
 
         static BatterySessionTracker() => LoadData();
 

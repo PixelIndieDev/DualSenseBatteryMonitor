@@ -108,13 +108,13 @@ namespace DualSenseBatteryMonitor
 #else
             if (onlineLatestUpdate == null)
             {
-                return await CheckOnlineForUpdate();
+                return onlineLatestUpdate = await CheckOnlineForUpdate();
             }
             else //version was cached
             {
                 if (onlineLatestUpdateCheckTime == default || DateTime.UtcNow - onlineLatestUpdateCheckTime >= TimeSpan.FromHours(hoursInBetweenOnlineChecks))
                 {
-                    return await CheckOnlineForUpdate();
+                    return onlineLatestUpdate = await CheckOnlineForUpdate();
                 }
                 else
                 {
@@ -153,7 +153,6 @@ namespace DualSenseBatteryMonitor
                     }
                 }
             }
-
             return null;
         }
 
@@ -199,6 +198,7 @@ namespace DualSenseBatteryMonitor
 
         protected override void OnExit(ExitEventArgs e)
         {
+            tray.Dispose();
             base.OnExit(e);
         }
 

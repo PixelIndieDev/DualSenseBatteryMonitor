@@ -34,7 +34,7 @@ namespace DualSenseBatteryMonitor
 
         private async Task CheckVersions()
         {
-            await App.checkVersions();
+            await App.CheckVersions();
             icon_NewUpdateAvaiable.Visibility = App.userCanUpdate ? Visibility.Visible : Visibility.Collapsed;
         }
 

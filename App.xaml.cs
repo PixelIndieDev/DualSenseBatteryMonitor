@@ -53,7 +53,7 @@ namespace DualSenseBatteryMonitor
         public static event Action? BatteryInPercentageChanged;
 
         //VersionUpdateCheck cache
-        private static readonly Version? onlineLatestUpdate = null;
+        private static Version? onlineLatestUpdate = null;
         private static DateTime? onlineLatestUpdateCheckTime = default;
         private const int hoursInBetweenOnlineChecks = 2;
         public static bool userCanUpdate = false;
@@ -80,19 +80,25 @@ namespace DualSenseBatteryMonitor
                 }
                 catch (Exception)
                 {
-
                 }
             }
         }
 
-        public static async Task checkVersions()
+        public static async Task CheckVersions()
         {
-            Version? latestVersion = await App.GetLatestVersionAsync();
-            Version? currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
+            try
+            {
+                Version? latestVersion = await App.GetLatestVersionAsync();
+                Version? currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
 
-            if (latestVersion == null || currentVersion == null) return;
+                if (latestVersion == null || currentVersion == null) return;
 
-            userCanUpdate = (latestVersion > currentVersion);
+                userCanUpdate = (latestVersion > currentVersion);
+            }
+            catch (Exception ex)
+            {
+                WriteLog($"Error checking versions: {ex.Message}");
+            }
         }
 
         public static async Task<Version?> GetLatestVersionAsync()
@@ -188,7 +194,7 @@ namespace DualSenseBatteryMonitor
 
             SyncStartupRegistryWithSetting();
 
-            checkVersions();
+            CheckVersions();
         }
 
         protected override void OnExit(ExitEventArgs e)

@@ -421,6 +421,7 @@ namespace DualSenseBatteryMonitor
                         else
                         {
                             RemoveLowBatteryWarning(devicePath);
+                            removeLowBatterySomeone(devicePath);
                         }
                     }
 

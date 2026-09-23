@@ -77,7 +77,7 @@ This application is inspired by:
 * The DualSense Edge version of the DualSense SVG is a edited version of the original
 
 ## 📃 License
-MIT License. See [LICENSE](LICENSE) file for details.
+GPL-3.0 License. See [LICENSE](LICENSE) file for details.
 
 ## 🔍 Keywords
 DualSense battery overlay, DualSense Edge battery overlay, PS5 controller low battery, DualSense WPF utility, DualSense Windows auto-start, gamepad battery warning, .NET 8 controller tool, DualSense battery level Windows 10/11, low battery widget for DualSense, DualSense charge monitor, DualSense Edge charge monitor, controller battery status desktop

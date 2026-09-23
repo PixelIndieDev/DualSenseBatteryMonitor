@@ -1,4 +1,5 @@
-﻿using DualSenseBatteryMonitor.components.enums;
+﻿using DualSenseBatteryMonitor.components.classes;
+using DualSenseBatteryMonitor.components.enums;
 using DualSenseBatteryMonitor.components.helpers;
 using HidSharp;
 using System.Buffers;
@@ -26,41 +27,6 @@ namespace DualSenseBatteryMonitor
     // Always add :) to important comments (not legally). VERY IMPORTANT!
     // Thank you. :)
     // -----------------------------
-
-    public class rawData
-    {
-        public byte[]? InputBuffer { get; set; }
-        public int BytesRead { get; set; }
-
-        public rawData(byte[]? inputBuffer, int bytesRead)
-        {
-            InputBuffer = inputBuffer;
-            BytesRead = bytesRead;
-        }
-    }
-
-    class LowBatteryWarning
-    {
-        public int BatteryPercent { get; set; }
-        public bool Shown { get; set; }
-
-        public LowBatteryWarning(int batteryPercent, bool shown)
-        {
-            BatteryPercent = batteryPercent;
-            Shown = shown;
-        }
-    }
-    class ErrorWarning
-    {
-        public int ErrorCode { get; set; }
-        public bool Shown { get; set; }
-
-        public ErrorWarning(int errorCode, bool shown)
-        {
-            ErrorCode = errorCode;
-            Shown = shown;
-        }
-    }
 
     public partial class MainWindow : Window
     {

@@ -1,4 +1,5 @@
 ﻿using DualSenseBatteryMonitor.components.enums;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -55,6 +56,15 @@ namespace DualSenseBatteryMonitor
         private readonly Storyboard blink_storyboard;
 
         private bool showBatteryInPercentage = App.GetShowBatteryInPercentageSetting();
+        //cache from last cycle
+        //maybe too much data to cache, but it works fine and works with the current code
+        private int lastControllerAmount;
+        private int lastBatteryLevel;
+        private bool lastIsCharging;
+        private ConnectionTypeEnum lastConnectionType;
+        private bool lastIsEdge;
+        private TimeSpan? lastDrainEstimate;
+        private bool hasRefreshData = false;
 
         // Constructor
         public controllerWidget(bool noControllers, int index, int batterylevel)
@@ -81,6 +91,7 @@ namespace DualSenseBatteryMonitor
         private void BatteryInPercentageChanged()
         {
             showBatteryInPercentage = App.GetShowBatteryInPercentageSetting();
+            if (hasRefreshData) RefreshData(lastControllerAmount, lastBatteryLevel, lastIsCharging, lastConnectionType, lastIsEdge, lastDrainEstimate);
         }
 
         private void OnBatteryStatVisibilityChanged()
@@ -234,6 +245,14 @@ namespace DualSenseBatteryMonitor
                     UpdateDrainStatLabel(); //remove drain stat label
                 }
             }
+
+            lastControllerAmount = controllerAmount;
+            lastBatteryLevel = batterylevel;
+            lastIsCharging = isCharging;
+            lastConnectionType = ConnectionType;
+            lastIsEdge = isEdge;
+            lastDrainEstimate = drainEstimate;
+            hasRefreshData = true;
         }
 
         private void UpdateDrainStatLabel()

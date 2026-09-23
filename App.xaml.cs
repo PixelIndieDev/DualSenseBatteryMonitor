@@ -118,7 +118,7 @@ namespace DualSenseBatteryMonitor
 #endif
         }
 
-        private static async Task<Version?> checkOnlineForUpdate()
+        private static async Task<Version?> CheckOnlineForUpdate()
         {
             using HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.UserAgent.ParseAdd("DualSenseBatteryMonitorApplication");

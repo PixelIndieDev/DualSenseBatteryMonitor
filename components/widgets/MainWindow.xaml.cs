@@ -103,7 +103,7 @@ namespace DualSenseBatteryMonitor
         private const bool Debug_OverrideControllers = true;
         private readonly byte[] overrideControllersBatteryLevels = { 95, 30, 35, 10 }; //default battery levels fro the override controllers
         private static readonly byte[] Debug_DrainControllers = { 1, 2, 3 }; //from 0-3
-        private const byte Debug_DrainRate = 3;
+        private const int Debug_DrainRate = 0;
 #else
         private const bool Debug_AlwaysShowWindow = false;
         private const bool Debug_DisableGeneralErrorCodeRemoval = false;
@@ -553,6 +553,47 @@ namespace DualSenseBatteryMonitor
             return shouldShow;
         }
 
+        private void ShowTemporaryWarning(bool warningsPending, Action markShown, DispatcherTimer timer, visibilityReason visReason)
+        {
+            if (warningsPending)
+            {
+                if (getWindowFadingStatus == visibilityWindow.Visible)
+                {
+                    if (reasonForVisibility == visReason)
+                    {
+                        if (timer.IsEnabled) timer.Stop();
+                        markShown();
+                        timer.Start();
+                        reasonForVisibility = visReason;
+                        FadeInMainWindow();
+                    }
+                }
+                else if (getWindowFadingStatus == visibilityWindow.Invisible)
+                {
+                    markShown();
+                    timer.Start();
+                    reasonForVisibility = visReason;
+                    FadeInMainWindow();
+                }
+            }
+            else
+            {
+                if (someoneWantBatteryShow.Any())
+                {
+                    FadeInMainWindow();
+                    reasonForVisibility = visibilityReason.UserInput;
+                }
+                else
+                {
+                    if (reasonForVisibility != visReason)
+                    {
+                        FadeOutMainWindow();
+                        reasonForVisibility = visibilityReason.None;
+                    }
+                }
+            }
+        }
+
         private void setShownAllWarnings(warningType warningTypeToSwitchOn)
         {
             switch (warningTypeToSwitchOn)
@@ -640,49 +681,13 @@ namespace DualSenseBatteryMonitor
                 }
                 else
                 {
-                    if (hasToShowItself(warningType.GeneralError) || hasToShowItself(warningType.Error))
+                    ShowTemporaryWarning(hasToShowItself(warningType.GeneralError) || hasToShowItself(warningType.Error), () =>
                     {
-                        if (getWindowFadingStatus == visibilityWindow.Visible)
-                        {
-                            if (reasonForVisibility == visibilityReason.ErrorWarning)
-                            {
-                                if (ErrorWarningTimer.IsEnabled)
-                                {
-                                    ErrorWarningTimer.Stop();
-                                }
-
-                                setShownAllWarnings(warningType.Error);
-                                setShownAllWarnings(warningType.GeneralError);
-                                ErrorWarningTimer.Start();
-                                reasonForVisibility = visibilityReason.ErrorWarning;
-                                FadeInMainWindow();
-                            }
-                        }
-                        else if (getWindowFadingStatus == visibilityWindow.Invisible)
-                        {
-                            setShownAllWarnings(warningType.Error);
-                            setShownAllWarnings(warningType.GeneralError);
-                            ErrorWarningTimer.Start();
-                            reasonForVisibility = visibilityReason.ErrorWarning;
-                            FadeInMainWindow();
-                        }
-                    }
-                    else
-                    {
-                        if (someoneWantBatteryShow.Any())
-                        {
-                            FadeInMainWindow();
-                            reasonForVisibility = visibilityReason.UserInput;
-                        }
-                        else
-                        {
-                            if (reasonForVisibility != visibilityReason.ErrorWarning)
-                            {
-                                FadeOutMainWindow();
-                                reasonForVisibility = visibilityReason.None;
-                            }
-                        }
-                    }
+                        setShownAllWarnings(warningType.Error);
+                        setShownAllWarnings(warningType.GeneralError);
+                    },
+                    ErrorWarningTimer,
+                    visibilityReason.ErrorWarning);
                 }
 
             }
@@ -698,47 +703,7 @@ namespace DualSenseBatteryMonitor
                     }
                     else //only show for 5 seconds
                     {
-                        if (hasToShowItself(warningType.LowBattery))
-                        {
-                            if (getWindowFadingStatus == visibilityWindow.Visible)
-                            {
-                                if (reasonForVisibility == visibilityReason.LowBatteryWarning)
-                                {
-                                    if (lowBatteryWarningTimer.IsEnabled)
-                                    {
-                                        lowBatteryWarningTimer.Stop();
-                                    }
-
-                                    setShownAllWarnings(warningType.LowBattery);
-                                    lowBatteryWarningTimer.Start();
-                                    reasonForVisibility = visibilityReason.LowBatteryWarning;
-                                    FadeInMainWindow();
-                                }
-                            }
-                            else if (getWindowFadingStatus == visibilityWindow.Invisible)
-                            {
-                                setShownAllWarnings(warningType.LowBattery);
-                                lowBatteryWarningTimer.Start();
-                                reasonForVisibility = visibilityReason.LowBatteryWarning;
-                                FadeInMainWindow();
-                            }
-                        }
-                        else
-                        {
-                            if (someoneWantBatteryShow.Any())
-                            {
-                                FadeInMainWindow();
-                                reasonForVisibility = visibilityReason.UserInput;
-                            }
-                            else
-                            {
-                                if (reasonForVisibility != visibilityReason.LowBatteryWarning)
-                                {
-                                    FadeOutMainWindow();
-                                    reasonForVisibility = visibilityReason.None;
-                                }
-                            }
-                        }
+                        ShowTemporaryWarning(hasToShowItself(warningType.LowBattery), () => setShownAllWarnings(warningType.LowBattery), lowBatteryWarningTimer, visibilityReason.LowBatteryWarning);
                     }
                 }
                 else //No one has low battery

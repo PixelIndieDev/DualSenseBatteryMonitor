@@ -58,6 +58,8 @@ namespace DualSenseBatteryMonitor
         private const int hoursInBetweenOnlineChecks = 2;
         public static bool userCanUpdate = false;
 
+        private static readonly Dictionary<string, bool> settingsCache = new();
+
         private NotifyIcon? tray;
         private SettingsWindow? settingsWindow;
 
@@ -254,116 +256,66 @@ namespace DualSenseBatteryMonitor
             }
         }
 
-        public static void SetRunOnStartupSetting(bool enable)
+        private static bool GetCachedBoolSetting(string settingName, int defaultValue)
+        {
+            if (settingsCache.TryGetValue(settingName, out bool cached)) return cached;
+
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            bool value = (int)key.GetValue(settingName, defaultValue) == 1;
+            settingsCache[settingName] = value;
+            return value;
+        }
+
+        private static void SetCachedBoolSetting(string settingName, bool enable)
         {
             using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
-            key.SetValue(RunOnStartupSettingName, enable ? 1 : 0, RegistryValueKind.DWord);
+            key.SetValue(settingName, enable ? 1 : 0, RegistryValueKind.DWord);
+            settingsCache[settingName] = enable;
+        }
 
+        public static bool GetRunOnStartupSetting() => GetCachedBoolSetting(RunOnStartupSettingName, 1);
+        public static void SetRunOnStartupSetting(bool enable)
+        {
+            SetCachedBoolSetting(RunOnStartupSettingName, enable);
             // Update the Windows startup registry to match
             UpdateStartupRegistry(enable);
         }
 
-        public static bool GetRunOnStartupSetting()
-        {
-            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
-            int value = (int)key.GetValue(RunOnStartupSettingName, 1);
-            return value == 1;
-        }
+        public static bool GetShowStyleSetting() => GetCachedBoolSetting(LowBatterySettingName, 1);
+        public static void SetShowStyleSetting(bool enable) => SetCachedBoolSetting(LowBatterySettingName, enable);
 
-        public static bool GetShowStyleSetting()
-        {
-            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
-            int value = (int)key.GetValue(LowBatterySettingName, 0);
-            return value == 1;
-        }
-        public static void SetShowStyleSetting(bool enable)
-        {
-            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
-            key.SetValue(LowBatterySettingName, enable ? 1 : 0, RegistryValueKind.DWord);
-        }
+        public static bool GetErrorShowStyleSetting() => GetCachedBoolSetting(ErrorShowStyleSettingName, 1);
+        public static void SetErrorShowStyleSetting(bool enable) => SetCachedBoolSetting(ErrorShowStyleSettingName, enable);
 
-        public static bool GetErrorShowStyleSetting()
-        {
-            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
-            int value = (int)key.GetValue(ErrorShowStyleSettingName, 1);
-            return value == 1;
-        }
-        public static void SetErrorShowStyleSetting(bool enable)
-        {
-            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
-            key.SetValue(ErrorShowStyleSettingName, enable ? 1 : 0, RegistryValueKind.DWord);
-        }
+        public static bool GetWriteExceptionsInLogFileSetting() => GetCachedBoolSetting(WriteExceptionsInLogFileSettingName, 1);
+        public static void SetWriteExceptionsInLogFileSetting(bool enable) => SetCachedBoolSetting(WriteExceptionsInLogFileSettingName, enable);
 
-        public static bool GetWriteExceptionsInLogFileSetting()
-        {
-            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
-            int value = (int)key.GetValue(WriteExceptionsInLogFileSettingName, 1);
-            return value == 1;
-        }
-        public static void SetWriteExceptionsInLogFileSetting(bool enable)
-        {
-            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
-            key.SetValue(WriteExceptionsInLogFileSettingName, enable ? 1 : 0, RegistryValueKind.DWord);
-        }
-
-        public static bool GetShowBatteryStatsTimeLeftSetting()
-        {
-            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
-            int value = (int)key.GetValue(ShowBatteryStatsTimeLeftName, 1);
-            return value == 1;
-        }
+        public static bool GetShowBatteryStatsTimeLeftSetting() => GetCachedBoolSetting(ShowBatteryStatsTimeLeftName, 1);
         public static void SetShowBatteryStatsTimeLeftSetting(bool enable)
         {
-            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
-            key.SetValue(ShowBatteryStatsTimeLeftName, enable ? 1 : 0, RegistryValueKind.DWord);
-
+            SetCachedBoolSetting(ShowBatteryStatsTimeLeftName, enable);
             BatteryStatVisibilityChanged?.Invoke();
         }
 
-        public static bool GetShowBatteryStatsTimeEstimateSetting()
-        {
-            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
-            int value = (int)key.GetValue(ShowBatteryStatsTimeEstimateName, 1);
-            return value == 1;
-        }
+        public static bool GetShowBatteryStatsTimeEstimateSetting() => GetCachedBoolSetting(ShowBatteryStatsTimeEstimateName, 1);
         public static void SetShowBatteryStatsTimeEstimateSetting(bool enable)
         {
-            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
-            key.SetValue(ShowBatteryStatsTimeEstimateName, enable ? 1 : 0, RegistryValueKind.DWord);
-
+            SetCachedBoolSetting(ShowBatteryStatsTimeEstimateName, enable);
             BatteryStatVisibilityChanged?.Invoke();
         }
 
-        public static bool GetDontSaveBatteryStatsSetting()
-        {
-            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
-            int value = (int)key.GetValue(DontSaveBatteryStatsName, 1);
-            return value == 1;
-        }
+        public static bool GetDontSaveBatteryStatsSetting() => GetCachedBoolSetting(DontSaveBatteryStatsName, 1);
         public static void SetDontSaveBatteryStatsSetting(bool enable)
         {
-            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
-            key.SetValue(DontSaveBatteryStatsName, enable ? 1 : 0, RegistryValueKind.DWord);
-
+            SetCachedBoolSetting(DontSaveBatteryStatsName, enable);
             BatteryStatVisibilityChanged?.Invoke();
-
-            if (!enable)
-            {
-                BatteryStatFileDeleted?.Invoke();
-            }
+            if (!enable) BatteryStatFileDeleted?.Invoke();
         }
 
-        public static bool GetShowBatteryInPercentageSetting()
-        {
-            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
-            int value = (int)key.GetValue(ShowBatteryInPercentageName, 0);
-            return value == 1;
-        }
+        public static bool GetShowBatteryInPercentageSetting() => GetCachedBoolSetting(ShowBatteryInPercentageName, 0);
         public static void SetShowBatteryInPercentageSetting(bool enable)
         {
-            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
-            key.SetValue(ShowBatteryInPercentageName, enable ? 1 : 0, RegistryValueKind.DWord);
-
+            SetCachedBoolSetting(ShowBatteryInPercentageName, enable);
             BatteryInPercentageChanged?.Invoke();
         }
     }

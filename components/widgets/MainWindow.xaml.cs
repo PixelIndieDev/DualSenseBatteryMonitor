@@ -235,7 +235,7 @@ namespace DualSenseBatteryMonitor
             HashSet<string> connectedPaths = cachedDevices.Select(d => d.DevicePath).ToHashSet();
             List<string> stalePaths = latestRawData.Keys.Where(p => !connectedPaths.Contains(p)).ToList();
 
-            foreach (var path in stalePaths)
+            foreach (string path in stalePaths)
             {
                 RemoveControllerFunction(path);
             }
@@ -387,7 +387,7 @@ namespace DualSenseBatteryMonitor
             {
                 foreach (KeyValuePair<string, (int BatteryPercent, bool IsCharging, ConnectionTypeEnum ConnectionType, bool IsEdge)> controllerBattery in controllerBatterlevels)
                 {
-                    var devicePath = controllerBattery.Key;
+                    string devicePath = controllerBattery.Key;
                     (int BatteryPercent, bool IsCharging, ConnectionTypeEnum ConnectionType, bool IsEdge) batteryData = controllerBattery.Value;
 
                     TimeSpan? drainEstimate = BatterySessionTracker.EstimateFullDrainTime(devicePath);
@@ -566,7 +566,7 @@ namespace DualSenseBatteryMonitor
                     }
                     break;
                 case warningType.GeneralError:
-                    foreach (var key in generalErrorWarningsGivenAt.Keys)
+                    foreach (int key in generalErrorWarningsGivenAt.Keys)
                     {
                         ref bool valueRef = ref CollectionsMarshal.GetValueRefOrNullRef(generalErrorWarningsGivenAt, key);
                         if (!Unsafe.IsNullRef(ref valueRef) && !valueRef)
@@ -781,7 +781,7 @@ namespace DualSenseBatteryMonitor
 
         private void MakeWindowClickThroughAndNoActivate()
         {
-            var WindowInteropHelper = new WindowInteropHelper(this).Handle;
+            nint WindowInteropHelper = new WindowInteropHelper(this).Handle;
 
             //Get current extended style
             int extended_style = GetWindowLong(WindowInteropHelper, GWL_EXSTYLE);
@@ -878,7 +878,7 @@ namespace DualSenseBatteryMonitor
                             }
                         }
 
-                        var copy = new byte[bytesRead];
+                        byte[] copy = new byte[bytesRead];
                         Array.Copy(inputBuffer, copy, bytesRead);
 
                         latestRawData[deviceId] = new rawData(copy, bytesRead);
@@ -905,7 +905,7 @@ namespace DualSenseBatteryMonitor
             hidReadInProgress = false;
 
             List<string> disconnected = latestRawData.Keys.Where(path => !connectedDevicePaths.Contains(path)).ToList();
-            foreach (var path in disconnected)
+            foreach (string path in disconnected)
             {
                 RemoveControllerFunction(path);
             }
@@ -967,8 +967,8 @@ namespace DualSenseBatteryMonitor
             {
                 string devicePath = pair.Key;
 
-                var buffer = pair.Value.InputBuffer;
-                var bytesRead = pair.Value.BytesRead;
+                byte[] buffer = pair.Value.InputBuffer;
+                int bytesRead = pair.Value.BytesRead;
 
                 if (buffer == null || bytesRead <= 0) continue;
 

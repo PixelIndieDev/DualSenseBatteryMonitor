@@ -129,7 +129,7 @@ namespace DualSenseBatteryMonitor
                 using JsonDocument doc = JsonDocument.Parse(response);
                 if (doc != null)
                 {
-                    var root = doc.RootElement;
+                    JsonElement root = doc.RootElement;
                     if (doc != null)
                     {
                         string tag = root.GetProperty("tag_name").GetString();
@@ -137,7 +137,7 @@ namespace DualSenseBatteryMonitor
                         if (string.IsNullOrWhiteSpace(tag)) return null;
 
                         tag = tag.TrimStart('v', 'V');
-                        if (Version.TryParse(tag, out var version))
+                        if (Version.TryParse(tag, out Version? version))
                         {
                             onlineLatestUpdateCheckTime = DateTime.Now;
                             return version;
@@ -170,7 +170,7 @@ namespace DualSenseBatteryMonitor
 
             tray = new NotifyIcon();
             Uri uri = new Uri("pack://application:,,,/icons/window/BatteryMonitor.ico");
-            using (var stream = GetResourceStream(uri).Stream)
+            using (Stream stream = GetResourceStream(uri).Stream)
             {
                 tray.Icon = new Icon(stream);
             }
@@ -221,7 +221,7 @@ namespace DualSenseBatteryMonitor
 
         private static bool IsInStartupRegistry()
         {
-            using var key = Registry.CurrentUser.OpenSubKey(AppRegistryPathStartup, false);
+            using RegistryKey? key = Registry.CurrentUser.OpenSubKey(AppRegistryPathStartup, false);
             return key?.GetValue(AppName) != null;
         }
 
@@ -231,7 +231,7 @@ namespace DualSenseBatteryMonitor
             string? exePath = Process.GetCurrentProcess().MainModule?.FileName;
             if (string.IsNullOrEmpty(exePath)) return;
 
-            using var key = Registry.CurrentUser.OpenSubKey(AppRegistryPathStartup, true);
+            using RegistryKey? key = Registry.CurrentUser.OpenSubKey(AppRegistryPathStartup, true);
             if (key == null) return;
 
             if (enable)
@@ -256,7 +256,7 @@ namespace DualSenseBatteryMonitor
 
         public static void SetRunOnStartupSetting(bool enable)
         {
-            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
             key.SetValue(RunOnStartupSettingName, enable ? 1 : 0, RegistryValueKind.DWord);
 
             // Update the Windows startup registry to match
@@ -265,56 +265,56 @@ namespace DualSenseBatteryMonitor
 
         public static bool GetRunOnStartupSetting()
         {
-            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
             int value = (int)key.GetValue(RunOnStartupSettingName, 1);
             return value == 1;
         }
 
         public static bool GetShowStyleSetting()
         {
-            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
             int value = (int)key.GetValue(LowBatterySettingName, 0);
             return value == 1;
         }
         public static void SetShowStyleSetting(bool enable)
         {
-            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
             key.SetValue(LowBatterySettingName, enable ? 1 : 0, RegistryValueKind.DWord);
         }
 
         public static bool GetErrorShowStyleSetting()
         {
-            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
             int value = (int)key.GetValue(ErrorShowStyleSettingName, 1);
             return value == 1;
         }
         public static void SetErrorShowStyleSetting(bool enable)
         {
-            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
             key.SetValue(ErrorShowStyleSettingName, enable ? 1 : 0, RegistryValueKind.DWord);
         }
 
         public static bool GetWriteExceptionsInLogFileSetting()
         {
-            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
             int value = (int)key.GetValue(WriteExceptionsInLogFileSettingName, 1);
             return value == 1;
         }
         public static void SetWriteExceptionsInLogFileSetting(bool enable)
         {
-            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
             key.SetValue(WriteExceptionsInLogFileSettingName, enable ? 1 : 0, RegistryValueKind.DWord);
         }
 
         public static bool GetShowBatteryStatsTimeLeftSetting()
         {
-            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
             int value = (int)key.GetValue(ShowBatteryStatsTimeLeftName, 1);
             return value == 1;
         }
         public static void SetShowBatteryStatsTimeLeftSetting(bool enable)
         {
-            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
             key.SetValue(ShowBatteryStatsTimeLeftName, enable ? 1 : 0, RegistryValueKind.DWord);
 
             BatteryStatVisibilityChanged?.Invoke();
@@ -322,13 +322,13 @@ namespace DualSenseBatteryMonitor
 
         public static bool GetShowBatteryStatsTimeEstimateSetting()
         {
-            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
             int value = (int)key.GetValue(ShowBatteryStatsTimeEstimateName, 1);
             return value == 1;
         }
         public static void SetShowBatteryStatsTimeEstimateSetting(bool enable)
         {
-            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
             key.SetValue(ShowBatteryStatsTimeEstimateName, enable ? 1 : 0, RegistryValueKind.DWord);
 
             BatteryStatVisibilityChanged?.Invoke();
@@ -336,13 +336,13 @@ namespace DualSenseBatteryMonitor
 
         public static bool GetDontSaveBatteryStatsSetting()
         {
-            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
             int value = (int)key.GetValue(DontSaveBatteryStatsName, 1);
             return value == 1;
         }
         public static void SetDontSaveBatteryStatsSetting(bool enable)
         {
-            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
             key.SetValue(DontSaveBatteryStatsName, enable ? 1 : 0, RegistryValueKind.DWord);
 
             BatteryStatVisibilityChanged?.Invoke();
@@ -355,13 +355,13 @@ namespace DualSenseBatteryMonitor
 
         public static bool GetShowBatteryInPercentageSetting()
         {
-            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
             int value = (int)key.GetValue(ShowBatteryInPercentageName, 0);
             return value == 1;
         }
         public static void SetShowBatteryInPercentageSetting(bool enable)
         {
-            using var key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
             key.SetValue(ShowBatteryInPercentageName, enable ? 1 : 0, RegistryValueKind.DWord);
 
             BatteryInPercentageChanged?.Invoke();

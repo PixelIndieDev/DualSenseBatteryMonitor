@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using DualSenseBatteryMonitor.components.classes.battery;
+using System.IO;
 using System.Text.Json;
 
 namespace DualSenseBatteryMonitor.components.helpers
@@ -15,22 +16,6 @@ namespace DualSenseBatteryMonitor.components.helpers
     // code that is substantially derived from this source. Always include the credit (not legally).
     // Thank you. :)
     // -----------------------------
-    public class DrainSegment
-    {
-        public double PercentDrained { get; set; }
-        public double MinutesElapsed { get; set; }
-        public DateTime Timestamp { get; set; }
-
-        public byte BatteryLevel { get; set; }
-    }
-
-    public class DeviceDrainData
-    {
-        public List<DrainSegment> Segments { get; set; } = new();
-        public TimeSpan? CachedEstimated { get; set; }
-
-        public double PendingMinutes { get; set; }
-    }
 
     public static class BatterySessionTracker
     {

@@ -102,13 +102,13 @@ namespace DualSenseBatteryMonitor
 #else
             if (onlineLatestUpdate == null)
             {
-                return await checkOnlineForUpdate();
+                return await CheckOnlineForUpdate();
             }
             else //version was cached
             {
                 if (onlineLatestUpdateCheckTime == default || DateTime.UtcNow - onlineLatestUpdateCheckTime >= TimeSpan.FromHours(hoursInBetweenOnlineChecks))
                 {
-                    return await checkOnlineForUpdate();
+                    return await CheckOnlineForUpdate();
                 }
                 else
                 {

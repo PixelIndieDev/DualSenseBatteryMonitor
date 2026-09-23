@@ -33,7 +33,7 @@ namespace DualSenseBatteryMonitor
         private const string AppRegistryPathStartup = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
         private const string AppRegistryPathSettings = @"SOFTWARE\PixelIndieDev\DualSenseBatteryMonitor";
         private const string AppName = "DualSenseBatteryMonitor";
-        private const string LowBatterySettingName = "ShowLowBatteryWarningContinuously"; //As you can see, I forgot to renamed the registry namings after different vegetables. This is a major blunder, as using different vegetable namings ARE CRUCIAL! :)
+        private const string LowBatterySettingName = "ShowLowBatteryWarningContinuously";
         private const string ErrorShowStyleSettingName = "ShowErrorWarningContinuously";
         private const string WriteExceptionsInLogFileSettingName = "WriteExceptionsInLogFile";
         private const string RunOnStartupSettingName = "RunOnStartup";

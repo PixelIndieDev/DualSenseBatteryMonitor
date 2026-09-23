@@ -213,7 +213,7 @@ namespace DualSenseBatteryMonitor.components.helpers
 
             try
             {
-                string json = JsonSerializer.Serialize(drainData, new JsonSerializerOptions { WriteIndented = true });
+                string json = JsonSerializer.Serialize(drainData, new JsonSerializerOptions { WriteIndented = false });
                 File.WriteAllText(DataFile, json);
 
                 App.batteryDrainStatsErrorCode = -1;

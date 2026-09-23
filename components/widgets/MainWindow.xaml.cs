@@ -41,7 +41,7 @@ namespace DualSenseBatteryMonitor
         //backup timer
         private readonly DispatcherTimer nodeviceBackupTimer = new DispatcherTimer(DispatcherPriority.Background);
 
-        private IEnumerable<HidDevice> cachedDevices = new List<HidDevice>();
+        private List<HidDevice> cachedDevices = new List<HidDevice>();
         private bool hidReadInProgress = false;
 
         // settings
@@ -354,8 +354,9 @@ namespace DualSenseBatteryMonitor
             {
                 //Check for hid devices
                 cachedDevices = DeviceList.Local.GetHidDevices(1356).Where(d => // Vendor/Product ID
-                                                   d.ProductID == 0x0CE6 || // DualSense normal
-                                                   d.ProductID == 0x0DF2);  // DualSense Edge
+                                                    d.ProductID == 0x0CE6 || // DualSense normal
+                                                    d.ProductID == 0x0DF2).ToList(); // DualSense Edge
+
                 RemoveGeneralErrorCode(640);
 #if DEBUG
                 Debug.Print("found - " + cachedDevices.Count() + " devices");

@@ -1104,7 +1104,7 @@ namespace DualSenseBatteryMonitor
             if (errorWarningsGivenAt.ContainsKey(deviceID)) errorWarningsGivenAt.Remove(deviceID);
         }
 
-        //Dualsense sometimes (usually when bluetooth was restarted) sends only button presses and no other info , to trigger it into full info mode it is required to read 0x05 report from it.
+        //Dualsense sometimes (usually when bluetooth was restarted) sends only button presses and no other info, to trigger it into full info mode it is required to read 0x05 report from it.
         //AFAIK when controller recieves request to read from it 0x05 report it switches to full bluetooth functionality
         private async Task WaketofullBT(HidDevice controller)
         {

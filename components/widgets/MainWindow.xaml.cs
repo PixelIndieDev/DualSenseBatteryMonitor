@@ -3,7 +3,6 @@ using DualSenseBatteryMonitor.components.enums;
 using DualSenseBatteryMonitor.components.helpers;
 using HidSharp;
 using System.Buffers;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -112,7 +111,7 @@ namespace DualSenseBatteryMonitor
         private const bool Debug_OverrideChargingRead = false;
         private const bool Debug_OverrideChargingValue = false;
         private const bool Debug_OverrideControllers = false;
-        private byte[] overrideControllersBatteryLevels = { }; //default battery levels fro the override controllers
+        private readonly byte[] overrideControllersBatteryLevels = { }; //default battery levels fro the override controllers
         private static readonly byte[] Debug_DrainControllers = { }; //from 0-3
         private const byte Debug_DrainRate = 0;
 #endif

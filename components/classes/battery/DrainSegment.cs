@@ -1,11 +1,11 @@
 ﻿namespace DualSenseBatteryMonitor.components.classes.battery
 {
-    internal class DrainSegment
+    public class DrainSegment
     {
-        internal double PercentDrained { get; set; }
-        internal double MinutesElapsed { get; set; }
-        internal DateTime Timestamp { get; set; }
+        public double PercentDrained { get; set; }
+        public double MinutesElapsed { get; set; }
+        public DateTime Timestamp { get; set; }
 
-        internal byte BatteryLevel { get; set; }
+        public byte BatteryLevel { get; set; }
     }
 }

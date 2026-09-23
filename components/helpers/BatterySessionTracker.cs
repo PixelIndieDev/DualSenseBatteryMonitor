@@ -39,11 +39,6 @@ namespace DualSenseBatteryMonitor.components.helpers
         private static bool isDirty = false;
 
         //active in memory only
-        private class ActiveState
-        {
-            public int LastBatteryPercent { get; set; }
-            public DateTime LastReadingTime { get; set; }
-        }
         private static readonly Dictionary<string, ActiveState> activeDrainDataStates = new();
 
         public static void FlushPendingChanges()
@@ -70,13 +65,6 @@ namespace DualSenseBatteryMonitor.components.helpers
 
             // dont read when errored out
             if (batteryPercent >= App.batteryErrorCodeTrehsold) return;
-
-            // if a previous save failed, retry it now so error code 1200 clears if the issue resolved
-            if (pendingSaveRetry)
-            {
-                pendingSaveRetry = false;
-                SaveData();
-            }
 
             bool hasState = activeDrainDataStates.TryGetValue(devicePath, out ActiveState? state);
             if (!hasState)
@@ -141,21 +129,20 @@ namespace DualSenseBatteryMonitor.components.helpers
                     BatteryLevel = (byte)batteryPercent,
                 };
 
-                if (!drainData.ContainsKey(devicePath))
+                if (!drainData.TryGetValue(devicePath, out DeviceDrainData? deviceData))
                 {
-                    drainData[devicePath] = new DeviceDrainData();
+                    deviceData = new DeviceDrainData();
+                    drainData[devicePath] = deviceData;
                 }
 
-                drainData[devicePath].Segments.Add(segment);
-                drainData[devicePath].PendingMinutes = 0;
+                deviceData.Segments.Add(segment);
+                deviceData.PendingMinutes = 0;
 
                 // trim and keep most recent
-                if (drainData[devicePath].Segments.Count > MaxSegmentsPerDevice)
-                {
-                    drainData[devicePath].Segments = drainData[devicePath].Segments.OrderByDescending(s => s.Timestamp).Take(MaxSegmentsPerDevice).ToList();
-                }
+                int excess = deviceData.Segments.Count - MaxSegmentsPerDevice;
+                if (excess > 0) deviceData.Segments.RemoveRange(0, excess);
 
-                SaveData();
+                isDirty = true;
             }
             else
             {
@@ -165,7 +152,7 @@ namespace DualSenseBatteryMonitor.components.helpers
                 }
 
                 drainData[devicePath].PendingMinutes += minutesPassed;
-                SaveData();
+                isDirty = true;
             }
 
             state.LastBatteryPercent = batteryPercent;

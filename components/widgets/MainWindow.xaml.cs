@@ -959,6 +959,7 @@ namespace DualSenseBatteryMonitor
                         BatterySessionTracker.RecordReading(fakePath, overrideControllersBatteryLevels[i], i == 0 ? true : false);
                     }
                 }
+                BatterySessionTracker.FlushPendingChanges();
                 return result;
 #pragma warning restore CS0162
             }
@@ -1088,6 +1089,7 @@ namespace DualSenseBatteryMonitor
 
                 if (battery == 887) addErrorWarningToGiven(devicePath, battery);
             }
+            BatterySessionTracker.FlushPendingChanges();
             return result;
         }
 

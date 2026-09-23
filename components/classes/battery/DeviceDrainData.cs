@@ -1,10 +1,10 @@
 ﻿namespace DualSenseBatteryMonitor.components.classes.battery
 {
-    internal class DeviceDrainData
+    public class DeviceDrainData
     {
-        internal List<DrainSegment> Segments { get; set; } = new();
-        internal TimeSpan? CachedEstimated { get; set; }
+        public List<DrainSegment> Segments { get; set; } = new();
+        public TimeSpan? CachedEstimated { get; set; }
 
-        internal double PendingMinutes { get; set; }
+        public double PendingMinutes { get; set; }
     }
 }

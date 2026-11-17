@@ -843,56 +843,54 @@ namespace DualSenseBatteryMonitor
                 try
                 {
                     inputBuffer = ArrayPool<byte>.Shared.Rent(controller.GetMaxInputReportLength());
+                    bytesRead = await HidReader.ReadReportAsync(controller, inputBuffer);
 
-                    using (HidStream stream = controller.Open())
+                    if (bytesRead > 0)
                     {
-                        await Task.Yield();
-                        bytesRead = stream.Read(inputBuffer, 0, inputBuffer.Length);
+                        byte bufferLoc;
+                        //is USB
+                        if (bytesRead == 64 || bytesRead == 79) bufferLoc = 10;
+                        else bufferLoc = 11;
 
-                        if (bytesRead > 0)
+                        if (someoneWantBatteryShow.Any())
                         {
-                            byte bufferLoc;
-                            //is USB
-                            if (bytesRead == 64 || bytesRead == 79) bufferLoc = 10;
-                            else bufferLoc = 11;
-
-                            if (someoneWantBatteryShow.Any())
+                            if (inputBuffer[bufferLoc] == 0x01) //pressing PS button
                             {
-                                if (inputBuffer[bufferLoc] == 0x01) //pressing PS button
+                                if (batteryShowTimer.IsEnabled)
                                 {
-                                    if (batteryShowTimer.IsEnabled)
-                                    {
-                                        batteryShowTimer.Stop();
-                                        batteryShowTimer.Start();
-                                    }
-                                    else
-                                    {
-                                        batteryShowTimer.Start();
-                                    }
+                                    batteryShowTimer.Stop();
+                                    batteryShowTimer.Start();
                                 }
-                            }
-                            else
-                            {
-                                if (inputBuffer[bufferLoc] == 0x01) //pressing PS button
+                                else
                                 {
-                                    someoneWantBatteryShow.Add(deviceId);
                                     batteryShowTimer.Start();
                                 }
                             }
                         }
-
-                        byte[] copy = new byte[bytesRead];
-                        Array.Copy(inputBuffer, copy, bytesRead);
-
-                        latestRawData[deviceId] = new rawData(copy, bytesRead);
-                        RemoveGeneralErrorCode(655);
+                        else
+                        {
+                            if (inputBuffer[bufferLoc] == 0x01) //pressing PS button
+                            {
+                                someoneWantBatteryShow.Add(deviceId);
+                                batteryShowTimer.Start();
+                            }
+                        }
                     }
 
+                    byte[] copy = new byte[bytesRead];
+                    Array.Copy(inputBuffer, copy, bytesRead);
+
+                    latestRawData[deviceId] = new rawData(copy, bytesRead);
+                    RemoveGeneralErrorCode(655);
                 }
                 catch (System.IO.IOException e)
                 {
                     //controller got disconnected while checking
                     App.WriteLog("GetRawDataHID() | System IOException - " + e);
+                }
+                catch (TimeoutException)
+                {
+                    // keep the previous data
                 }
                 catch (Exception e)
                 {

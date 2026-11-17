@@ -53,6 +53,7 @@ namespace DualSenseBatteryMonitor
         private bool isPlayingLowBatAnim = false;
         private const int lowBatteryThreshold = 15;
         private readonly Storyboard blink_storyboard;
+        private bool animationsPaused = true;
 
         private bool showBatteryInPercentage = App.GetShowBatteryInPercentageSetting();
         //cache from last cycle
@@ -85,6 +86,14 @@ namespace DualSenseBatteryMonitor
             App.BatteryStatFileDeleted += OnBatteryStatFileDeleted;
 
             App.BatteryInPercentageChanged += BatteryInPercentageChanged;
+        }
+
+        public void SetAnimationPaused(bool paused)
+        {
+            animationsPaused = paused;
+            if (!isPlayingLowBatAnim) return;
+            if (paused) blink_storyboard.Pause(this);
+            else blink_storyboard.Resume(this);
         }
 
         private void BatteryInPercentageChanged()
@@ -363,6 +372,7 @@ namespace DualSenseBatteryMonitor
                     {
                         // true: isControllable so we can stop it later
                         blink_storyboard.Begin(this, true);
+                        if (animationsPaused) blink_storyboard.Pause(this);
                         isPlayingLowBatAnim = true;
 
                         //Display battery warning icon is not already

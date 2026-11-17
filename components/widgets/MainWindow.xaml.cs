@@ -755,6 +755,7 @@ namespace DualSenseBatteryMonitor
             {
                 Opacity = 0;
                 Show();
+                SetWidgetAnimationsPaused(false);
                 OverlayPositionHelper.PositionOnSelectedMonitor(this);
                 WindowTopHelper.BringToTopNoFocus(this);
                 DoubleAnimation anim = new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(visibilityFadeTime));
@@ -775,6 +776,7 @@ namespace DualSenseBatteryMonitor
                 anim.Completed += (s, a) =>
                 {
                     Hide();
+                    SetWidgetAnimationsPaused(true);
                     getWindowFadingStatus = visibilityWindow.Invisible;
                 };
                 getWindowFadingStatus = visibilityWindow.FadingOut;
@@ -1143,6 +1145,14 @@ namespace DualSenseBatteryMonitor
                 //Catch exception wake
                 AddGeneralErrorCode(771);
                 App.WriteLog("WaketofullBT(HidDevice controller) | Exception - " + e);
+            }
+        }
+
+        private void SetWidgetAnimationsPaused(bool paused)
+        {
+            foreach (controllerWidget widget in controllerWidgets)
+            {
+                widget?.SetAnimationPaused(paused);
             }
         }
 

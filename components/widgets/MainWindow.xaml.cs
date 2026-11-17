@@ -65,6 +65,8 @@ namespace DualSenseBatteryMonitor
 
         private int LastControllerCount = 0;
         private readonly List<string> someoneWantBatteryShow = new List<string>();
+        private readonly HashSet<string> connectedDevicePaths = new HashSet<string>();
+        private readonly List<string> disconnectedPathsBuffer = new List<string>();
 
         //visibility
         private visibilityWindow getWindowFadingStatus = visibilityWindow.Invisible;
@@ -831,7 +833,7 @@ namespace DualSenseBatteryMonitor
             if (hidReadInProgress) return;
             hidReadInProgress = true;
 
-            HashSet<string> connectedDevicePaths = new HashSet<string>();
+            connectedDevicePaths.Clear();
 
             foreach (HidDevice controller in cachedDevices)
             {
@@ -879,10 +881,16 @@ namespace DualSenseBatteryMonitor
                         }
                     }
 
-                    byte[] copy = new byte[bytesRead];
-                    Array.Copy(inputBuffer, copy, bytesRead);
-
-                    latestRawData[deviceId] = new rawData(copy, bytesRead);
+                    if (latestRawData.TryGetValue(deviceId, out rawData? existing) && existing.InputBuffer != null && existing.InputBuffer.Length == bytesRead)
+                    {
+                        Array.Copy(inputBuffer, existing.InputBuffer, bytesRead);
+                    }
+                    else
+                    {
+                        byte[] copy = new byte[bytesRead];
+                        Array.Copy(inputBuffer, copy, bytesRead);
+                        latestRawData[deviceId] = new rawData(copy, bytesRead);
+                    }
                     RemoveGeneralErrorCode(655);
                 }
                 catch (System.IO.IOException e)
@@ -906,9 +914,12 @@ namespace DualSenseBatteryMonitor
             }
 
             hidReadInProgress = false;
-
-            List<string> disconnected = latestRawData.Keys.Where(path => !connectedDevicePaths.Contains(path)).ToList();
-            foreach (string path in disconnected)
+            disconnectedPathsBuffer.Clear();
+            foreach (string path in latestRawData.Keys)
+            {
+                if (!connectedDevicePaths.Contains(path)) disconnectedPathsBuffer.Add(path);
+            }
+            foreach (string path in disconnectedPathsBuffer)
             {
                 RemoveControllerFunction(path);
             }

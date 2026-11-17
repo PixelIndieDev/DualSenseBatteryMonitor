@@ -1,4 +1,5 @@
-﻿using DualSenseBatteryMonitor.Components.Enums;
+﻿using DualSenseBatteryMonitor.components.helpers;
+using DualSenseBatteryMonitor.Components.Enums;
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.IO;
@@ -206,6 +207,7 @@ namespace DualSenseBatteryMonitor
 
         protected override void OnExit(ExitEventArgs e)
         {
+            BatterySessionTracker.FlushPendingChanges(true);
             tray.Dispose();
             base.OnExit(e);
         }

@@ -33,6 +33,10 @@ namespace DualSenseBatteryMonitor.components.helpers
         private const float MinAmountOfTimeNeeded = 10.0f;
 #endif
 
+        private static readonly JsonSerializerOptions jsonOptions = new JsonSerializerOptions { WriteIndented = false };
+        private static readonly TimeSpan MinTimeBetweenSaves = TimeSpan.FromMinutes(1);
+        private static DateTime lastSaveTime = DateTime.MinValue;
+
         private static Dictionary<string, DeviceDrainData> drainData = new();
 
         private static bool pendingSaveRetry = false;
@@ -41,12 +45,14 @@ namespace DualSenseBatteryMonitor.components.helpers
         //active in memory only
         private static readonly Dictionary<string, ActiveState> activeDrainDataStates = new();
 
-        public static void FlushPendingChanges()
+        public static void FlushPendingChanges(bool force = false)
         {
             if (App.GetDontSaveBatteryStatsSetting()) return;
             if (!isDirty && !pendingSaveRetry) return;
+            if (!force && DateTime.Now - lastSaveTime < MinTimeBetweenSaves) return;
 
             isDirty = false;
+            lastSaveTime = DateTime.Now;
             SaveData();
         }
 
@@ -213,9 +219,10 @@ namespace DualSenseBatteryMonitor.components.helpers
 
             try
             {
-                string json = JsonSerializer.Serialize(drainData, new JsonSerializerOptions { WriteIndented = false });
+                string json = JsonSerializer.Serialize(drainData, jsonOptions);
                 File.WriteAllText(DataFile, json);
 
+                pendingSaveRetry = false;
                 App.batteryDrainStatsErrorCode = -1;
             }
             catch (Exception e)

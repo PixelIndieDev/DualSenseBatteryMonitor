@@ -1,4 +1,5 @@
 ﻿using DualSenseBatteryMonitor.components.classes.battery;
+using DualSenseBatteryMonitor.Components.Helpers;
 using System.IO;
 using System.Text.Json;
 
@@ -20,7 +21,7 @@ namespace DualSenseBatteryMonitor.components.helpers
     public static class BatterySessionTracker
     {
         // defaults
-        private const string DataFile = "BatteryDrainData.json";
+        private static readonly string DataFile = AppPathHelper.BatteryDrainDataFile;
         private const int MaxSegmentsPerDevice = 100;
         private const float MinAmountOfTime = 0.01f;
 #if DEBUG

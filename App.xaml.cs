@@ -1,5 +1,6 @@
 ﻿using DualSenseBatteryMonitor.components.helpers;
 using DualSenseBatteryMonitor.Components.Enums;
+using DualSenseBatteryMonitor.Components.Helpers;
 using Microsoft.Win32;
 using System.Diagnostics;
 using System.IO;
@@ -78,8 +79,7 @@ namespace DualSenseBatteryMonitor
             if (App.GetWriteExceptionsInLogFileSetting())
             {
                 //log file path
-                string filePath = "DualSenseExceptionLog.log";
-
+                string filePath = AppPathHelper.ExceptionLogFile;
                 try
                 {
                     string logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}{Environment.NewLine}";

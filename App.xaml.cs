@@ -41,6 +41,7 @@ namespace DualSenseBatteryMonitor
         private const string DontSaveBatteryStatsName = "DontSaveBatteryStats";
         private const string ShowBatteryInPercentageName = "ShowBatteryInPercentage";
         private const string OverlayOnMonitorSettingName = "OverlayOnMonitor";
+        private const string AlwaysShowOverlaySettingName = "AlwaysShowOverlay";
 
         //threshold
         public static readonly int batteryErrorCodeTrehsold = 500;
@@ -344,5 +345,8 @@ namespace DualSenseBatteryMonitor
             overlayOnMonitorCache = deviceName;
             OverlayOnMonitorChanged?.Invoke();
         }
+
+        public static bool GetAlwaysShowOverlaySetting() => GetCachedBoolSetting(AlwaysShowOverlaySettingName, 0);
+        public static void SetAlwaysShowOverlaySetting(bool enable) => SetCachedBoolSetting(AlwaysShowOverlaySettingName, enable);
     }
 }

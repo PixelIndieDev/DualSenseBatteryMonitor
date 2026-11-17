@@ -57,6 +57,8 @@ namespace DualSenseBatteryMonitor
             WriteExceptionsCheckBox.IsChecked = App.GetWriteExceptionsInLogFileSetting();
 
             ShowBatteryInPercentageCheckBox.IsChecked = App.GetShowBatteryInPercentageSetting();
+
+            AlwaysShowOverlayCheckBox.IsChecked = App.GetAlwaysShowOverlaySetting();
         }
 
         private void LoadMonitorOptions()
@@ -79,6 +81,11 @@ namespace DualSenseBatteryMonitor
         private void RunOnStartupCheckBox_Changed(object sender, RoutedEventArgs e)
         {
             App.SetRunOnStartupSetting(RunOnStartupCheckBox.IsChecked == true);
+        }
+
+        private void AlwaysShowOverlayCheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            App.SetAlwaysShowOverlaySetting(AlwaysShowOverlayCheckBox.IsChecked == true);
         }
 
         private void OverlayMonitorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

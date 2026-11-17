@@ -95,7 +95,6 @@ namespace DualSenseBatteryMonitor
 
         // Debug variables
 #if DEBUG
-        private const bool Debug_AlwaysShowWindow = true;
         private const bool Debug_DisableGeneralErrorCodeRemoval = false;
         private const bool Debug_OverrideBatteryLevelRead = false;
         private const byte Debug_OverrideBatteryLevelValue = 12;
@@ -672,14 +671,22 @@ namespace DualSenseBatteryMonitor
                 return;
             }
 
-            if (Debug_AlwaysShowWindow)
+            if (App.GetAlwaysShowOverlaySetting())
             {
-#pragma warning disable CS0162
+                reasonForVisibility = visibilityReason.None;
+
+                setShownAllWarnings(warningType.Error);
+                setShownAllWarnings(warningType.GeneralError);
+                setShownAllWarnings(warningType.LowBattery);
+
                 if (getWindowFadingStatus == visibilityWindow.Invisible)
                 {
                     FadeInMainWindow();
                 }
-#pragma warning restore CS0162
+                else if (getWindowFadingStatus == visibilityWindow.Visible)
+                {
+                    WindowTopHelper.BringToTopNoFocus(this);
+                }
                 return;
             }
 

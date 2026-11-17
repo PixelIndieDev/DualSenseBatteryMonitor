@@ -4,7 +4,6 @@ using DualSenseBatteryMonitor.components.helpers;
 using DualSenseBatteryMonitor.Components.Helpers;
 using HidSharp;
 using System.Buffers;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -12,6 +11,10 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+
+#if DEBUG
+using System.Diagnostics;
+#endif
 
 namespace DualSenseBatteryMonitor
 {

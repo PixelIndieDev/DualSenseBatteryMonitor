@@ -84,6 +84,11 @@ namespace DualSenseBatteryMonitor
                 {
                     string logEntry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}{Environment.NewLine}";
 
+                    FileInfo info = new FileInfo(filePath);
+                    if (info.Exists && info.Length > 1024 * 1024)
+                    {
+                        File.Move(filePath, filePath + ".old", true);
+                    }
                     //add to text file
                     File.AppendAllText(filePath, logEntry);
                 }

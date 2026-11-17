@@ -40,6 +40,7 @@ namespace DualSenseBatteryMonitor
         private const string ShowBatteryStatsTimeEstimateName = "ShowBatteryStatsTimeEstimate";
         private const string DontSaveBatteryStatsName = "DontSaveBatteryStats";
         private const string ShowBatteryInPercentageName = "ShowBatteryInPercentage";
+        private const string OverlayOnMonitorSettingName = "OverlayOnMonitor";
 
         //threshold
         public static readonly int batteryErrorCodeTrehsold = 500;
@@ -51,6 +52,7 @@ namespace DualSenseBatteryMonitor
         public static event Action? BatteryStatVisibilityChanged;
         public static event Action? BatteryStatFileDeleted;
         public static event Action? BatteryInPercentageChanged;
+        public static event Action? OverlayOnMonitorChanged;
 
         //VersionUpdateCheck cache
         private static Version? onlineLatestUpdate = null;
@@ -59,6 +61,7 @@ namespace DualSenseBatteryMonitor
         public static bool userCanUpdate = false;
 
         private static readonly Dictionary<string, bool> settingsCache = new();
+        private static string? overlayOnMonitorCache = null;
 
         private NotifyIcon? tray;
         private SettingsWindow? settingsWindow;
@@ -323,6 +326,23 @@ namespace DualSenseBatteryMonitor
         {
             SetCachedBoolSetting(ShowBatteryInPercentageName, enable);
             BatteryInPercentageChanged?.Invoke();
+        }
+
+        public static string GetOverlayMonitorSetting()
+        {
+            if (overlayOnMonitorCache != null) return overlayOnMonitorCache;
+
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            overlayOnMonitorCache = key.GetValue(OverlayOnMonitorSettingName, string.Empty) as string ?? string.Empty;
+            return overlayOnMonitorCache;
+        }
+
+        public static void SetOverlayMonitorSetting(string deviceName)
+        {
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            key.SetValue(OverlayOnMonitorSettingName, deviceName, RegistryValueKind.String);
+            overlayOnMonitorCache = deviceName;
+            OverlayOnMonitorChanged?.Invoke();
         }
     }
 }

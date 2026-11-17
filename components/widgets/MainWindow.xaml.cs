@@ -1,8 +1,10 @@
 ﻿using DualSenseBatteryMonitor.components.classes;
 using DualSenseBatteryMonitor.components.enums;
 using DualSenseBatteryMonitor.components.helpers;
+using DualSenseBatteryMonitor.Components.Helpers;
 using HidSharp;
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -152,17 +154,14 @@ namespace DualSenseBatteryMonitor
             deviceNotificationHelper.DeviceDisconnected += OnDeviceDisconnected;
 
             this.SourceInitialized += MainWindow_SourceInitialized;
+
+            App.OverlayOnMonitorChanged += RepositionOverlay;
+            Microsoft.Win32.SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            //Get the working area of the primary screen (excluding taskbar)
-            Rect workingArea = System.Windows.SystemParameters.WorkArea;
-
-            //Position the window at the top-right corner
-            this.Left = workingArea.Right - this.Width;
-            //Set height with offset
-            this.Top = workingArea.Top + (workingArea.Height / 20);
+            OverlayPositionHelper.PositionOnSelectedMonitor(this);
         }
 
         private void MainWindow_SourceInitialized(object sender, EventArgs e)
@@ -181,12 +180,25 @@ namespace DualSenseBatteryMonitor
         {
             base.OnClosed(e);
 
+            App.OverlayOnMonitorChanged -= RepositionOverlay;
+            Microsoft.Win32.SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
+
             deviceNotificationHelper?.Dispose();
             updateTimerHID?.Stop();
             batteryShowTimer?.Stop();
             lowBatteryWarningTimer?.Stop();
             ErrorWarningTimer?.Stop();
             nodeviceBackupTimer?.Stop();
+        }
+
+        private void RepositionOverlay()
+        {
+            Dispatcher.InvokeAsync(() => OverlayPositionHelper.PositionOnSelectedMonitor(this));
+        }
+
+        private void OnDisplaySettingsChanged(object? sender, EventArgs e)
+        {
+            RepositionOverlay();
         }
 
         private async void OnDeviceConnected(object sender, EventArgs e)
@@ -718,8 +730,10 @@ namespace DualSenseBatteryMonitor
         {
             if (getWindowFadingStatus == visibilityWindow.Invisible)
             {
-                Show();
                 Opacity = 0;
+                Show();
+                OverlayPositionHelper.PositionOnSelectedMonitor(this);
+                WindowTopHelper.BringToTopNoFocus(this);
                 DoubleAnimation anim = new System.Windows.Media.Animation.DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(visibilityFadeTime));
                 anim.Completed += (s, a) =>
                 {

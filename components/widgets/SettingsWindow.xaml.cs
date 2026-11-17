@@ -1,7 +1,10 @@
 ﻿using DualSenseBatteryMonitor.components.helpers;
+using DualSenseBatteryMonitor.Components.Classes;
+using DualSenseBatteryMonitor.Components.Helpers;
 using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Navigation;
 
 namespace DualSenseBatteryMonitor
@@ -21,10 +24,13 @@ namespace DualSenseBatteryMonitor
 
     public partial class SettingsWindow : Window
     {
+        private bool isLoadingMonitorOptions = false;
+
         public SettingsWindow()
         {
             InitializeComponent();
             LoadSettings();
+            LoadMonitorOptions();
             LoadVersion();
 
             UpdateBatteryStatsCheckboxesEnabled();
@@ -53,6 +59,17 @@ namespace DualSenseBatteryMonitor
             ShowBatteryInPercentageCheckBox.IsChecked = App.GetShowBatteryInPercentageSetting();
         }
 
+        private void LoadMonitorOptions()
+        {
+            isLoadingMonitorOptions = true;
+            List<MonitorSelectionOption> options = MonitorHelper.GetMonitorOptions();
+            OverlayMonitorComboBox.ItemsSource = options;
+
+            string saved = App.GetOverlayMonitorSetting();
+            OverlayMonitorComboBox.SelectedItem = options.FirstOrDefault(o => o.DeviceName == saved) ?? options[0];
+            isLoadingMonitorOptions = false;
+        }
+
         private void LoadVersion()
         {
             Version? version = Assembly.GetExecutingAssembly().GetName().Version;
@@ -62,6 +79,15 @@ namespace DualSenseBatteryMonitor
         private void RunOnStartupCheckBox_Changed(object sender, RoutedEventArgs e)
         {
             App.SetRunOnStartupSetting(RunOnStartupCheckBox.IsChecked == true);
+        }
+
+        private void OverlayMonitorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (isLoadingMonitorOptions) return;
+            if (OverlayMonitorComboBox.SelectedItem is MonitorSelectionOption option)
+            {
+                App.SetOverlayMonitorSetting(option.DeviceName);
+            }
         }
 
         private void ShowLowBatteryCheckBox_Changed(object sender, RoutedEventArgs e)

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DualSenseBatteryMonitor"
         mc:Ignorable="d"
-        Title="DualSense Battery Monitor Settings" Height="700" Width="400" WindowStartupLocation="CenterScreen" Foreground="White" WindowStyle="SingleBorderWindow" SnapsToDevicePixels="True" Topmost="False" Focusable="True" IsHitTestVisible="True" ResizeMode="NoResize" ShowInTaskbar="True" Icon="/icons/window/BatteryMonitor.ico" ShowActivated="True">
+        Title="DualSense Battery Monitor Settings" Height="780" Width="400" WindowStartupLocation="CenterScreen" Foreground="White" WindowStyle="SingleBorderWindow" SnapsToDevicePixels="True" Topmost="False" Focusable="True" IsHitTestVisible="True" ResizeMode="NoResize" ShowInTaskbar="True" Icon="/icons/window/BatteryMonitor.ico" ShowActivated="True">
     <Window.Background>
         <LinearGradientBrush x:Name="gradient_background" EndPoint="0,0" StartPoint="1,1" SpreadMethod="Pad">
             <GradientStop Color="#FF00439C" Offset="0"/>
@@ -22,6 +22,10 @@
         <StackPanel Grid.Row="1">
             <CheckBox x:Name="RunOnStartupCheckBox" Content="Run on startup" FontSize="18" Foreground="White" Checked="RunOnStartupCheckBox_Changed" Unchecked="RunOnStartupCheckBox_Changed" Margin="0,10,0,0"/>
             <TextBlock Text="Automatically launch the battery monitor when Windows starts" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>
+
+            <TextBlock Text="Overlay on monitor" FontSize="18" Foreground="White" Margin="0,10,0,0"/>
+            <ComboBox x:Name="OverlayMonitorComboBox" FontSize="14" Foreground="Black" Margin="22,4,0,0" SelectionChanged="OverlayMonitorComboBox_SelectionChanged"/>
+            <TextBlock Text="Choose which monitor the battery overlay appears on" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>
 
             <CheckBox x:Name="ShowLowBatteryCheckBox" Content="Show low battery warning continuously" FontSize="18" Foreground="White" Checked="ShowLowBatteryCheckBox_Changed" Unchecked="ShowLowBatteryCheckBox_Changed" Margin="0,10,0,0"/>
             <TextBlock Text="Keep the low battery warning visible until the controller is charged or the battery level is no longer low" FontSize="12" Foreground="#FFB0B0B0" Margin="22,2,0,0" TextWrapping="Wrap"/>

@@ -98,6 +98,9 @@ namespace DualSenseBatteryMonitor
 
         private visibilityReason reasonForVisibility = visibilityReason.None;
 
+        // visuals
+        private readonly BackgroundHelper backgroundHelper;
+
         // Debug variables
 #if DEBUG
         private const bool Debug_DisableGeneralErrorCodeRemoval = false;
@@ -151,6 +154,7 @@ namespace DualSenseBatteryMonitor
             nodeviceBackupTimer.Interval = TimeSpan.FromSeconds(BackupCheckTimeSec);
 
             gradient_background.Freeze();
+            backgroundHelper = new BackgroundHelper(gradient_background);
 
             deviceNotificationHelper = new DeviceNotificationHelper();
             deviceNotificationHelper.DeviceConnected += OnDeviceConnected;
@@ -164,6 +168,9 @@ namespace DualSenseBatteryMonitor
             App.OverlayCornerChanged += OnOverlayCornerChanged;
             SizeChanged += MainWindow_SizeChanged;
             OverlayLocationHelper.ApplyBorderStyle(border_overlay, flowLayout_controller, App.GetOverlayCornerSetting());
+
+            OverlayLocationHelper.ApplyBorderStyle(border_overlay, flowLayout_controller, App.GetOverlayCornerSetting());
+            backgroundHelper.ApplyBackground(border_overlay, App.GetOverlayCornerSetting());
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -213,6 +220,7 @@ namespace DualSenseBatteryMonitor
         private void OnOverlayCornerChanged()
         {
             OverlayLocationHelper.ApplyBorderStyle(border_overlay, flowLayout_controller, App.GetOverlayCornerSetting());
+            backgroundHelper.ApplyBackground(border_overlay, App.GetOverlayCornerSetting());
             RepositionOverlay();
         }
 

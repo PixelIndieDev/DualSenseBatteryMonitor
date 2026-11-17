@@ -1,5 +1,6 @@
 ﻿using DualSenseBatteryMonitor.components.helpers;
 using DualSenseBatteryMonitor.Components.Classes;
+using DualSenseBatteryMonitor.Components.Enums;
 using DualSenseBatteryMonitor.Components.Helpers;
 using System.Diagnostics;
 using System.Reflection;
@@ -25,11 +26,13 @@ namespace DualSenseBatteryMonitor
     public partial class SettingsWindow : Window
     {
         private bool isLoadingMonitorOptions = false;
+        private bool isLoadingCornerOptions = false;
 
         public SettingsWindow()
         {
             InitializeComponent();
             LoadSettings();
+            LoadCornerOption();
             LoadMonitorOptions();
             LoadVersion();
 
@@ -162,6 +165,30 @@ namespace DualSenseBatteryMonitor
         private void ShowBatteryInPercentageCheckBox_Changed(object sender, RoutedEventArgs e)
         {
             App.SetShowBatteryInPercentageSetting(ShowBatteryInPercentageCheckBox.IsChecked == true);
+        }
+
+        private void LoadCornerOption()
+        {
+            isLoadingCornerOptions = true;
+            OverlayLocation saved = App.GetOverlayCornerSetting();
+            foreach (ComboBoxItem item in OverlayCornerComboBox.Items)
+            {
+                if (item.Tag is OverlayLocation corner && corner == saved)
+                {
+                    OverlayCornerComboBox.SelectedItem = item;
+                    break;
+                }
+            }
+            isLoadingCornerOptions = false;
+        }
+
+        private void OverlayCornerComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (isLoadingCornerOptions) return;
+            if (OverlayCornerComboBox.SelectedItem is ComboBoxItem item && item.Tag is OverlayLocation corner)
+            {
+                App.SetOverlayCornerSetting(corner);
+            }
         }
     }
 }

@@ -12,7 +12,7 @@
             <RowDefinition Height="11*"/>
             <RowDefinition Height="89*"/>
         </Grid.RowDefinitions>
-        <Border BorderThickness="1,1,0,1" CornerRadius="20,0,0,20" SnapsToDevicePixels="True" ClipToBounds="True" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.RowSpan="2">
+        <Border x:Name="border_overlay" BorderThickness="1,1,0,1" CornerRadius="20,0,0,20" SnapsToDevicePixels="True" ClipToBounds="True" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.RowSpan="2">
             <Border.Background>
                 <LinearGradientBrush x:Name="gradient_background" EndPoint="0,0" StartPoint="1,1" SpreadMethod="Pad">
                     <GradientStop Color="#FF00439C" Offset="0"/>

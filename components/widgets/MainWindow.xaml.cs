@@ -105,7 +105,6 @@ namespace DualSenseBatteryMonitor
         private static readonly byte[] Debug_DrainControllers = { 1, 2, 3 }; //from 0-3
         private const int Debug_DrainRate = 0;
 #else
-        private const bool Debug_AlwaysShowWindow = false;
         private const bool Debug_DisableGeneralErrorCodeRemoval = false;
         private const bool Debug_OverrideBatteryLevelRead = false;
         private const byte Debug_OverrideBatteryLevelValue = 12;
@@ -156,6 +155,10 @@ namespace DualSenseBatteryMonitor
 
             App.OverlayOnMonitorChanged += RepositionOverlay;
             Microsoft.Win32.SystemEvents.DisplaySettingsChanged += OnDisplaySettingsChanged;
+
+            App.OverlayCornerChanged += OnOverlayCornerChanged;
+            SizeChanged += MainWindow_SizeChanged;
+            OverlayLocationHelper.ApplyBorderStyle(border_overlay, flowLayout_controller, App.GetOverlayCornerSetting());
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -182,6 +185,8 @@ namespace DualSenseBatteryMonitor
             App.OverlayOnMonitorChanged -= RepositionOverlay;
             Microsoft.Win32.SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
 
+            App.OverlayCornerChanged -= OnOverlayCornerChanged;
+
             deviceNotificationHelper?.Dispose();
             updateTimerHID?.Stop();
             batteryShowTimer?.Stop();
@@ -196,6 +201,17 @@ namespace DualSenseBatteryMonitor
         }
 
         private void OnDisplaySettingsChanged(object? sender, EventArgs e)
+        {
+            RepositionOverlay();
+        }
+
+        private void OnOverlayCornerChanged()
+        {
+            OverlayLocationHelper.ApplyBorderStyle(border_overlay, flowLayout_controller, App.GetOverlayCornerSetting());
+            RepositionOverlay();
+        }
+
+        private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             RepositionOverlay();
         }

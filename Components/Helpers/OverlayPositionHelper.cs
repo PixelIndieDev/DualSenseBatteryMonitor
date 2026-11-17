@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using DualSenseBatteryMonitor.Components.Enums;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 
@@ -37,18 +32,23 @@ namespace DualSenseBatteryMonitor.Components.Helpers
             if (handle == IntPtr.Zero) return;
 
             Rectangle workArea = MonitorHelper.GetSelectedScreen().WorkingArea;
+            OverlayLocation corner = App.GetOverlayCornerSetting();
 
-            MoveToTopRight(handle, workArea);
+            MoveToCorner(handle, workArea, corner);
             //different scaling monitor can resize the overlay, so do it twice (workaround)
-            MoveToTopRight(handle, workArea);
+            MoveToCorner(handle, workArea, corner);
         }
 
-        private static void MoveToTopRight(IntPtr handle, Rectangle workArea)
+        private static void MoveToCorner(IntPtr handle, Rectangle workArea, OverlayLocation corner)
         {
             if (!GetWindowRect(handle, out RECT rect)) return;
+
             int width = rect.Right - rect.Left;
-            int x = workArea.Right - width;
-            int y = workArea.Top + (workArea.Height / 20);
+            int height = rect.Bottom - rect.Top;
+            int verticalOffset = workArea.Height / 20;
+
+            int x = OverlayLocationHelper.IsLeft(corner) ? workArea.Left : workArea.Right - width;
+            int y = OverlayLocationHelper.IsBottom(corner) ? workArea.Bottom - height - verticalOffset : workArea.Top + verticalOffset;
             SetWindowPos(handle, IntPtr.Zero, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
         }
     }

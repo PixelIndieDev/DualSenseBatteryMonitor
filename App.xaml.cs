@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using DualSenseBatteryMonitor.Components.Enums;
+using Microsoft.Win32;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -42,6 +43,7 @@ namespace DualSenseBatteryMonitor
         private const string ShowBatteryInPercentageName = "ShowBatteryInPercentage";
         private const string OverlayOnMonitorSettingName = "OverlayOnMonitor";
         private const string AlwaysShowOverlaySettingName = "AlwaysShowOverlay";
+        private const string OverlayCornerSettingName = "OverlayCorner";
 
         //threshold
         public static readonly int batteryErrorCodeTrehsold = 500;
@@ -54,6 +56,7 @@ namespace DualSenseBatteryMonitor
         public static event Action? BatteryStatFileDeleted;
         public static event Action? BatteryInPercentageChanged;
         public static event Action? OverlayOnMonitorChanged;
+        public static event Action? OverlayCornerChanged;
 
         //VersionUpdateCheck cache
         private static Version? onlineLatestUpdate = null;
@@ -63,6 +66,7 @@ namespace DualSenseBatteryMonitor
 
         private static readonly Dictionary<string, bool> settingsCache = new();
         private static string? overlayOnMonitorCache = null;
+        private static OverlayLocation? overlayCornerCache = null;
 
         private NotifyIcon? tray;
         private SettingsWindow? settingsWindow;
@@ -348,5 +352,24 @@ namespace DualSenseBatteryMonitor
 
         public static bool GetAlwaysShowOverlaySetting() => GetCachedBoolSetting(AlwaysShowOverlaySettingName, 0);
         public static void SetAlwaysShowOverlaySetting(bool enable) => SetCachedBoolSetting(AlwaysShowOverlaySettingName, enable);
+
+        public static OverlayLocation GetOverlayCornerSetting()
+        {
+            if (overlayCornerCache.HasValue) return overlayCornerCache.Value;
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            int value = key.GetValue(OverlayCornerSettingName, 0) is int stored ? stored : 0;
+
+            if (!Enum.IsDefined(typeof(OverlayLocation), value)) value = (int)OverlayLocation.TopRight;
+            overlayCornerCache = (OverlayLocation)value;
+            return overlayCornerCache.Value;
+        }
+
+        public static void SetOverlayCornerSetting(OverlayLocation corner)
+        {
+            using RegistryKey key = Registry.CurrentUser.CreateSubKey(AppRegistryPathSettings);
+            key.SetValue(OverlayCornerSettingName, (int)corner, RegistryValueKind.DWord);
+            overlayCornerCache = corner;
+            OverlayCornerChanged?.Invoke();
+        }
     }
 }
